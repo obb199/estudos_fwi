@@ -235,23 +235,33 @@ class Aula:
             self.acertos += 1
         else:
             resp = None
-            while resp is None:
+            validas = [chr(97 + i) for i in range(len(alternativas))]
+            tentativas = 0
+            while resp is None and tentativas < 4:
+                tentativas += 1
                 try:
-                    bruto = input(FRACO + "    Sua resposta [a/b/c/...]: " + RESET)
+                    bruto = input(FRACO + "    Sua resposta [" +
+                                  "/".join(validas) +
+                                  "] ou ENTER para ver: " + RESET)
                 except (EOFError, KeyboardInterrupt):
                     print()
                     break
                 bruto = bruto.strip().lower()
-                if bruto and bruto[0] in [chr(97 + i) for i in range(len(alternativas))]:
+                if not bruto:
+                    break                       # ENTER vazio: revela a resposta
+                if bruto[0] in validas:
                     resp = ord(bruto[0]) - 97
                 else:
-                    print(FRACO + "    (digite uma das letras)" + RESET)
+                    print(FRACO + "    (digite " + "/".join(validas) +
+                          " ou ENTER para pular)" + RESET)
             if resp == correta:
                 self.acertos += 1
                 print(VERDE + NEGRITO + "    CORRETO!" + RESET)
             elif resp is not None:
                 print(VERMELHO + NEGRITO
                       + f"    Nao. A resposta e ({chr(97+correta)})." + RESET)
+            else:
+                print(FRACO + f"    Resposta: ({chr(97+correta)})" + RESET)
 
         for linha in textwrap.wrap(" ".join(explicacao.split()), L - 8):
             print(FRACO + "    " + linha + RESET)
