@@ -52,7 +52,7 @@ def main():
          ["npml", "nao (0)", "espessura da CPML em pontos"],
          ["pmlR", "com npml", "coef. de reflexao teorico da CPML (ex. 1e-5)"],
          ["pml_dir", "com npml", "0 = so z; 1 = so x; 2 = ambas; 3 = ambas sem o topo"],
-         ["acq_type", "nao (1)", "1 = superficie, 2 = crosswell"],
+         ["acq_type", "nao (1)", "0 = crosswell; 1 = superficie; 2 = ambos"],
          ["device", "nao (0)", "indice do dispositivo OpenCL"],
          ["seimogram_shape", "nao ('2d')", "'2d' -> (nt, nr*ns); '3d' -> (nt, nr, ns)"],
          ["g_smooth", "nao (0)", "sigma da suavizacao gaussiana do gradiente"],

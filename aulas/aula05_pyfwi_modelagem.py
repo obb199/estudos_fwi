@@ -77,7 +77,9 @@ def main():
            codigo faz `self.sdo = sdo/2`. Se voce ler o fonte e se confundir com
            esse fator 2, e por isso.
 
-        3. `inpa['acq_type']` TEM de ser 1 (superficie) ou 2 (crosswell).
+        3. `inpa['acq_type']` escolhe o kernel: 0 = crosswell, 1 = superficie,
+           2 = ambos. Os tres sao validos -- o perigo e usar um que nao casa
+           com a geometria montada.
            Qualquer outro valor -- 0, por exemplo -- nao levanta erro: o codigo
            simplesmente mapeia os receptores errado, e voce recebe um
            sismograma plausivel e ERRADO. Veja a secao de validacao cruzada no
@@ -128,7 +130,7 @@ def main():
         receptores. Isso e uma decisao fisica, nao cosmetica:
     """)
     a.tabela(["components", "campos devolvidos", "interpretacao"],
-             [["0", "taux, tauz (ambos = media)", "PRESSAO: -(sxx+szz)/2"],
+             [["0", "taux, tauz (ambos = media)", "(sxx+szz)/2 = -p (sinal trocado!)"],
               ["1", "taux", "so a tensao normal em x"],
               ["2", "vx, vz", "velocidade de particula (geofone)"],
               ["3", "taux, tauz, tauxz", "tensor de tensoes completo"],
@@ -138,6 +140,13 @@ def main():
         Use components=2 para imitar geofone (mede velocidade de particula).
         Use components=3 quando quiser INSPECIONAR a fisica -- e o que vamos
         fazer agora.
+
+        ATENCAO AO SINAL: components=0 nao devolve a pressao, devolve a MEDIA
+        DAS TENSOES NORMAIS. Em acquisition.seismic_section esta literalmente
+        `(taux + tauz)/2`, e como taux = sxx na convencao de tracao positiva do
+        kernel, isso e -p. Para ler pressao, inverta o sinal. Num L2 puramente
+        sintetico a polaridade se cancela; ao comparar com outro codigo ou com
+        hidrofone real, ela aparece como correlacao negativa.
     """)
 
     # ==================================================================
@@ -183,14 +192,18 @@ def main():
         linhas_prova.append((nome, dif, xz))
     print()
 
-    a.teoria("Leia estes numeros com atencao", """
-        No caso ELASTICO:
-            sigma_xx e sigma_zz diferem em ~50% -- o tensor NAO e isotropico.
-            sigma_xz vale ~35% de sigma_xx -- existe cisalhamento de verdade.
+    dif_el, xz_el = linhas_prova[0][1], linhas_prova[0][2]
+    dif_ac = linhas_prova[1][1]
+    a.teoria("Leia estes numeros com atencao", f"""
+        No caso ELASTICO (numeros da tabela acima):
+            sigma_xx e sigma_zz diferem em ~{100*dif_el:.0f}% -- o tensor NAO e
+            isotropico.
+            sigma_xz vale ~{100*xz_el:.0f}% de sigma_xx -- existe cisalhamento
+            de verdade.
 
         No caso ACUSTICO (vs = 0):
-            sigma_xx - sigma_zz cai para ~1e-7, ou seja, ZERO ate a precisao
-            de maquina (float32). O tensor ficou isotropico.
+            sigma_xx - sigma_zz cai para ~{dif_ac:.0e}, ou seja, ZERO ate a
+            precisao de maquina (float32). O tensor ficou isotropico.
             sigma_xz da EXATAMENTE 0.0 -- nao aproximadamente: exatamente,
             porque mu = 0 multiplica o termo inteiro.
 
@@ -200,9 +213,10 @@ def main():
 
             p = - (sigma_xx + sigma_zz) / 2 = - sigma_xx = - sigma_zz
 
-        E exatamente isso que o PyFWI devolve quando voce pede components=0.
-        Ou seja: o PyFWI nao tem um solver acustico separado. Ele tem um solver
-        ELASTICO, e voce obtem o regime acustico zerando vs.
+        E esse escalar -- a menos do sinal -- que components=0 devolve: ele
+        grava (sigma_xx + sigma_zz)/2, ou seja -p. Ou seja: o PyFWI nao tem um
+        solver acustico separado. Ele tem um solver ELASTICO, e voce obtem o
+        regime acustico zerando vs.
     """)
 
     dif_dado = nrm(d_el['taux'] - d_ac['taux']) / nrm(d_el['taux'])
@@ -364,6 +378,15 @@ def main():
         Isso encerra a comparacao de forma satisfatoria. Os dois codigos estao
         certos; o que diferia era a CONVENCAO DE FONTE, nao a fisica.
 
+        E vale fechar a conta dos SINAIS, porque ela tem duas inversoes que se
+        cancelam. O traco do PyFWI e (sxx+szz)/2 = -p (primeira inversao). E a
+        fonte explosiva do PyFWI (src_type=0) soma +w(t) as TENSOES normais, o
+        que em pressao e -w(t), enquanto o fwikit soma +w(t) direto na pressao
+        (segunda inversao). As duas se anulam, e por isso a correlacao sai
+        POSITIVA. Conte os sinais explicitamente: aqui eles se cancelaram, mas
+        um sinal sobrando seria lido como "os codigos discordam" quando o que
+        discorda e a convencao.
+
         Guarde a licao: ao comparar dois codigos de onda, verifique a convencao
         de fonte antes de suspeitar da fisica. As perguntas certas sao: a
         formulacao e de primeira ou de segunda ordem? A fonte entra na pressao,
@@ -378,14 +401,20 @@ def main():
         a curva subia monotonicamente do receptor 0 ao 45, como se a fonte
         estivesse fora do arranjo.
 
-        A causa era `inpa['acq_type'] = 0`. O PyFWI aceita esse valor sem
-        reclamar, mas so trata 1 (superficie) e 2 (crosswell); com 0 ele
-        monta o mapeamento de receptores por outro caminho e devolve um
-        sismograma que PARECE razoavel -- ate voce reparar que nao tem apice.
+        A causa era `inpa['acq_type'] = 0` com uma geometria de SUPERFICIE.
+        O valor 0 nao e invalido -- ele e o codigo de CROSSWELL
+        (acquisition.acq_parameters: 0 = crosswell, 1 = superficie, 2 = ambos).
+        O PyFWI compilou o kernel de poco e mapeou os receptores ao longo de uma
+        vertical, sobre posicoes que na verdade formavam uma linha horizontal.
+        Nada e levantado como erro: as duas configuracoes sao legitimas, so nao
+        combinavam entre si. O sismograma PARECE razoavel -- ate voce reparar que
+        nao tem apice.
 
         Duas licoes, e a segunda vale mais que a primeira:
 
-        1. Em aquisicao de superficie, `acq_type` = 1. Sempre.
+        1. Em aquisicao de superficie, `acq_type` = 1. Sempre -- e confira que
+           ele casa com a funcao que gerou as posicoes (surface_seismic <-> 1,
+           crosswell <-> 0).
 
         2. Um dado sintetico errado quase nunca vem com aviso. Ele vem bonito.
            A unica defesa barata e comparar com uma implementacao independente
@@ -444,7 +473,8 @@ def main():
         "O nucleo do PyFWI e ELASTICO. Acustico = vs zerado no MODELO, "
         "nao apenas components=0.",
         "Comprovado: com vs=0, sxz = 0 exatamente e sxx = szz ate precisao de "
-        "maquina. Pressao = -(sxx+szz)/2 = o que components=0 devolve.",
+        "maquina. Pressao = -(sxx+szz)/2; components=0 devolve +(sxx+szz)/2, "
+        "ou seja -p -- inverta o sinal.",
         "Sempre confronte um codigo novo com outro independente: amplitudes podem "
         "diferir, tempos de chegada nao.",
     ], proxima="aula06_pyfwi_parametros.py -- inpa, PML, checkpointing e custo")

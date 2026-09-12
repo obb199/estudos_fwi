@@ -130,9 +130,9 @@ material pela metade; rodar sem ler também.
 \midrule
 I   & 1--4   & Física e numérica da propagação: de onde vem a equação, como discretizá-la sem estragar a física \\
 II  & 5--6   & PyFWI como ferramenta de produção \\
-III & 7--10  & O problema inverso: função objetivo, estado adjunto, verificação \\
-IV  & 11--13 & Otimização, FWI completa, regularização \\
-V   & 14     & Onde a física adotada deixa de valer \\
+III & 7--9   & O problema inverso: função objetivo, estado adjunto, verificação \\
+IV  & 10--12 & Otimização, FWI completa, regularização \\
+V   & 13     & Onde a física adotada deixa de valer \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -143,7 +143,7 @@ está em \arq{aulas/}, e a caixa de ferramentas compartilhada em \arq{fwikit/}.
 \section*{As duas ferramentas, e por que são duas}
 
 \textbf{\arq{fwikit.acustico}} é um propagador acústico 2D escrito do zero em
-NumPy, com 476 linhas --- metade delas comentário. Não usa GPU, não é rápido, e
+NumPy, com 486 linhas --- metade delas comentário. Não usa GPU, não é rápido, e
 é inteiramente transparente: cada termo está visível. É com ele que derivamos e
 \emph{verificamos} o gradiente adjunto.
 
@@ -159,7 +159,7 @@ Todos os valores numéricos, tabelas e figuras deste PDF foram \emph{gerados
 pelo código do curso}, executado no ambiente descrito no
 \arq{README.md}. Nenhum número foi copiado de livro. Onde um resultado
 contraria a expectativa usual --- e há pelo menos um caso assim, no
-Capítulo 13 --- o texto discute o resultado obtido, não o esperado.
+Capítulo~\ref{cap:regularizacao} --- o texto discute o resultado obtido, não o esperado.
 \end{atencao}
 
 \begin{pratica}[As fórmulas são verificadas, não apenas citadas]
@@ -213,7 +213,7 @@ da onda, para cada tiro. Daí a Parte I: simular bem, e simular barato.
 
 \item \textbf{$J$ não é convexa.} Tem mínimos locais por toda parte. O
 fenômeno tem nome próprio --- \emph{cycle skipping} --- e causa próxima:
-diferença de fase maior que meio período. É o Capítulo 8.
+diferença de fase maior que meio período. É o Capítulo~\ref{cap:inverso}.
 
 \item \textbf{$\mathbf{m}$ é gigante.} De $10^4$ a $10^8$ incógnitas. Isso
 exclui qualquer método que precise montar a Hessiana, e exclui o cálculo do
@@ -228,7 +228,7 @@ simulações por iteração.
 O \textbf{método do estado adjunto} obtém o gradiente inteiro com
 \emph{duas} simulações por tiro --- uma direta e uma adjunta --- e o custo
 \emph{não depende do número de parâmetros}. Sem essa ideia não existiria FWI.
-É o Capítulo 9.
+É o Capítulo~\ref{cap:adjunto}.
 \end{teoria}
 
 \section{O que a FWI recupera bem, e o que não recupera}
@@ -373,7 +373,7 @@ $m(\mathbf{x}) = 1/c(\mathbf{x})^{2}$ --- a vagarosidade ao quadrado --- e
 não é linear em $c$.
 
 Isso não é preferência estética: torna a derivada em relação ao parâmetro
-trivial, e o gradiente adjunto sai limpo (Capítulo 9). A conversão para
+trivial, e o gradiente adjunto sai limpo (Capítulo~\ref{cap:adjunto}). A conversão para
 velocidade é a regra da cadeia:
 \[
 \frac{\partial J}{\partial c} = \frac{\partial J}{\partial m}\cdot\frac{dm}{dc}
@@ -618,7 +618,7 @@ explicá-los mexendo na velocidade. Você fabrica estrutura falsa.
 \midrule
 Truncar          & nada                     & zero  & inaceitável \\
 Cerjan (sponge)  & \emph{taper} multiplicativo & baixo & razoável \\
-Cond. absorvente & equação unidirecional    & baixo & boa a 90$^\circ$ \\
+Cond. absorvente & equação unidirecional    & baixo & boa em inc.\ normal \\
 CPML             & coordenadas complexas    & médio & excelente \\
 \bottomrule
 \end{tabular}
@@ -650,7 +650,8 @@ A comparação é eloquente: a CPML com 10 pontos já supera o Cerjan com 45.
 
 \begin{pratica}[Por que este curso usa Cerjan mesmo assim]
 O \emph{sponge} de Cerjan é um operador \textbf{diagonal}, portanto
-auto-adjunto. Isso preserva a validade do teste de gradiente do Capítulo 10
+auto-adjunto. Isso preserva a validade do teste de gradiente do
+Capítulo~\ref{cap:verificacao}
 sem exigir que você derive o adjunto de uma CPML.
 
 Há também um ótimo: \emph{taper} fraco demais não absorve, forte demais cria
@@ -781,10 +782,12 @@ d = W.forward_modeling(model, show=False)
 \textbf{2.} \texttt{inpa['sdo']} é a ordem espacial \emph{real} (4 ou 8), mas
 internamente o código faz \texttt{self.sdo = sdo/2}.
 
-\textbf{3.} \texttt{inpa['acq\_type']} tem de ser 1 (superfície) ou 2
-(\emph{crosswell}). Qualquer outro valor --- 0, por exemplo --- \emph{não}
-levanta erro: o código mapeia os receptores errado e devolve um sismograma
-plausível e errado. Veja a Seção \ref{sec:validacao}.
+\textbf{3.} \texttt{inpa['acq\_type']} seleciona o \emph{kernel} e o mapeamento
+de receptores: \textbf{0 = \emph{crosswell}}, \textbf{1 = superfície},
+\textbf{2 = ambos}. Os três são válidos --- e é justamente por isso que o
+descuido é perigoso: se o valor não casar com a geometria que você montou, o
+código \emph{não} levanta erro, mapeia os receptores por outro caminho e
+devolve um sismograma plausível e errado. Veja a Seção \ref{sec:validacao}.
 \end{armadilha}
 
 \section{O parâmetro \texttt{components}}
@@ -794,7 +797,7 @@ plausível e errado. Veja a Seção \ref{sec:validacao}.
 \toprule
 \textbf{\texttt{components}} & \textbf{Campos} & \textbf{Interpretação} \\
 \midrule
-0 & \texttt{taux}, \texttt{tauz} (média) & \textbf{pressão}: $-(\sigma_{xx}+\sigma_{zz})/2$ \\
+0 & \texttt{taux}, \texttt{tauz} (média) & $(\sigma_{xx}+\sigma_{zz})/2 = -p$ --- \textbf{pressão com o sinal trocado} \\
 1 & \texttt{taux} & só a tensão normal em $x$ \\
 2 & \texttt{vx}, \texttt{vz} & velocidade de partícula (geofone) \\
 3 & tensor de tensões completo & para inspecionar a física \\
@@ -802,6 +805,18 @@ plausível e errado. Veja a Seção \ref{sec:validacao}.
 \bottomrule
 \end{tabular}
 \end{center}
+
+\begin{armadilha}[O sinal de \texttt{components=0}]
+O PyFWI devolve a \emph{média das tensões normais}, não a pressão:
+\texttt{acquisition.seismic\_section} faz literalmente
+\texttt{(taux + tauz)/2}. Como \texttt{taux}$\,=\sigma_{xx}$ na convenção de
+tração positiva do \emph{kernel}, isso é $(\sigma_{xx}+\sigma_{zz})/2 = -p$
+pela definição \eqref{eq:pressao}. Para ler pressão, \textbf{inverta o sinal}.
+
+Num L2 puramente sintético a polaridade se cancela e o erro passa
+despercebido; ao comparar com outro código --- ou com dado real de hidrofone
+--- ela aparece como correlação negativa.
+\end{armadilha}
 
 \section{A prova numérica do regime acústico}
 
@@ -867,6 +882,20 @@ Sem ajuste e sem parâmetro livre: é exatamente a relação prevista. Os dois
 códigos estão certos; o que diferia era a \textbf{convenção de fonte}, não a
 física.
 
+\begin{atencao}[Por que a correlação sai \emph{positiva}]
+Vale fechar a conta dos sinais, porque ela envolve duas inversões que se
+cancelam. O traço do PyFWI é $(\sigma_{xx}+\sigma_{zz})/2 = -p$ --- primeira
+inversão. E a fonte explosiva do PyFWI (\texttt{src\_type=0}) soma
+$+w(t)$ às \emph{tensões} normais, o que em pressão é $-w(t)$, enquanto o
+\arq{fwikit} soma $+w(t)$ direto na pressão --- segunda inversão. As duas se
+anulam, e a correlação com a derivada temporal sai $+0{,}85$ em vez de
+$-0{,}85$.
+
+A lição não muda: \emph{conte os sinais explicitamente}. Aqui eles se
+cancelaram por sorte; uma comparação em que sobrasse um sinal seria lida como
+``os códigos discordam'' quando o que discorda é a convenção.
+\end{atencao}
+
 \begin{pratica}[As perguntas certas ao comparar dois códigos de onda]
 Antes de suspeitar da física, verifique a convenção de fonte:
 \begin{itemize}[leftmargin=*]
@@ -887,12 +916,20 @@ discordavam em 159\,ms, e o \emph{gather} do PyFWI \textbf{não tinha ápice} --
 a curva subia monotonicamente do receptor 0 ao 45, como se a fonte estivesse
 fora do arranjo.
 
-A causa era \texttt{acq\_type = 0}. O PyFWI aceita esse valor sem reclamar,
-mas só trata 1 e 2.
+A causa era \texttt{acq\_type = 0} com uma geometria de \emph{superfície}. O
+valor 0 não é inválido --- é o código de \emph{crosswell}
+(\texttt{acquisition.acq\_parameters}: 0 = crosswell, 1 = superfície,
+2 = ambos). O PyFWI então compilou o \emph{kernel} de poço e mapeou os
+receptores ao longo de uma vertical, sobre posições que na verdade eram uma
+linha horizontal. Nenhum erro é levantado: as duas configurações são legítimas,
+só não combinavam entre si.
 
 Duas lições, e a segunda vale mais:
 \begin{enumerate}
-\item Em aquisição de superfície, \texttt{acq\_type = 1}. Sempre.
+\item Em aquisição de superfície, \texttt{acq\_type = 1}. Sempre --- e confira
+que ele casa com a função que gerou as posições
+(\texttt{surface\_seismic} $\leftrightarrow$ 1,
+\texttt{crosswell} $\leftrightarrow$ 0).
 \item \textbf{Um dado sintético errado quase nunca vem com aviso. Ele vem
 bonito.} A defesa barata é comparar com uma implementação independente e
 checar se a física elementar aparece --- neste caso, se o ápice da
@@ -935,7 +972,7 @@ Levantada lendo o código-fonte, porque não existe na documentação.
 \texttt{npml} & não (0) & espessura da CPML em pontos \\
 \texttt{pmlR} & com \texttt{npml} & coef.\ de reflexão teórico (ex.\ 1e-5) \\
 \texttt{pml\_dir} & com \texttt{npml} & 0 = só $z$; 1 = só $x$; 2 = ambas; 3 = ambas sem o topo \\
-\texttt{acq\_type} & não (1) & 1 = superfície, 2 = \emph{crosswell} \\
+\texttt{acq\_type} & não (1) & 0 = \emph{crosswell}; 1 = superfície; 2 = ambos \\
 \texttt{device} & não (0) & índice do dispositivo OpenCL \\
 \texttt{seimogram\_shape} & não ('2d') & '2d' $\to (n_t, n_r n_s)$; '3d' $\to (n_t,n_r,n_s)$ \\
 \texttt{g\_smooth} & não (0) & $\sigma$ da suavização gaussiana do gradiente \\
@@ -1381,10 +1418,15 @@ ambíguos; a soma sobre tiros é que localiza a anomalia.}
 \end{figure}
 
 \begin{enumerate}[leftmargin=*]
-\item \textbf{O sinal.} A atualização é $\mathbf{m} \leftarrow \mathbf{m} -
-\alpha\,\mathbf{g}$. Onde $g$ é negativo, a velocidade vai \emph{aumentar}.
-Confira sempre o sinal contra uma perturbação conhecida: é o teste de sanidade
-mais barato.
+\item \textbf{O sinal --- e em qual parâmetro.} A atualização é
+$\mathbf{m} \leftarrow \mathbf{m} - \alpha\,\mathbf{g}$, e o sentido depende
+do parâmetro em que $\mathbf{g}$ está escrito. Em \textbf{velocidade}
+($g_c = \partial J/\partial c$), $g_c < 0$ faz $c$ \emph{aumentar}. Em
+\textbf{vagarosidade ao quadrado} ($g_m = \partial J/\partial m$, que é a
+forma em que \eqref{eq:gradiente} sai), o sentido \textbf{se inverte}: como
+$dm/dc = -2/c^3 < 0$, é $g_m > 0$ que faz a velocidade aumentar. As figuras
+deste capítulo mostram $g_c$. Confira sempre o sinal contra uma perturbação
+conhecida: é o teste de sanidade mais barato.
 \item \textbf{Artefato perto de fontes e receptores.} O campo tem amplitude
 enorme ali, e a correlação explode. Não é informação: é geometria.
 \item \textbf{Os arcos (``banana'').} Um tiro produz uma faixa larga ligando
@@ -1636,7 +1678,7 @@ Se você esqueceu de uma, o teste de gradiente acusa --- e é o único que acusa
 
 % =====================================================================
 \part*{\centering\color{azulfwi} Parte IV --- Otimização, FWI completa e regularização}
-\addcontentsline{toc}{part}{Parte IV --- Otimização e FWI completa}
+\addcontentsline{toc}{part}{Parte IV --- Otimização, FWI completa e regularização}
 
 \chapter{Otimização}
 \label{cap:otimizacao}
@@ -2390,6 +2432,10 @@ Springer, 2006.
 \item PLESSIX, R.-E. \emph{A review of the adjoint-state method for computing
 the gradient of a functional with geophysical applications.} Geophysical
 Journal International, v.~167, n.~2, p.~495--503, 2006.
+
+\item SHIN, C.; JANG, S.; MIN, D.-J. \emph{Improved amplitude preservation for
+prestack depth migration by inverse scattering theory.} Geophysical
+Prospecting, v.~49, n.~5, p.~592--606, 2001.
 
 \item TARANTOLA, A. \emph{Inversion of seismic reflection data in the acoustic
 approximation.} Geophysics, v.~49, n.~8, p.~1259--1266, 1984.

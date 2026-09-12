@@ -282,8 +282,8 @@ class Acustico2D:
         em implementacoes de FWI. O sintoma e um gradiente que passa no teste
         de diferencas finitas no MIOLO do modelo mas erra sistematicamente
         perto das bordas e da superficie (justamente onde ficam fontes e
-        receptores). No nosso caso isso valia ~10% de erro na derivada
-        direcional. Ver aula 09.
+        receptores). No nosso caso isso valia ~9% de erro na derivada
+        direcional (razao 0.9118 em vez de 1). Ver aula 09.
         """
         n = self.cfg.n_abs
         g = np.array(campo, dtype=np.float64, copy=True)

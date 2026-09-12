@@ -3,7 +3,7 @@
 Curso completo de FWI — teoria e prática juntas — do problema direto ao
 problema inverso, com código executável e verificação numérica.
 
-São **15 aulas interativas** em Python, um **PDF teórico de 56 páginas**, e uma
+São **15 aulas interativas** em Python, um **PDF teórico de 61 páginas**, e uma
 caixa de ferramentas (`fwikit`) com um propagador acústico próprio cujo
 gradiente adjunto é **verificado contra diferenças finitas**.
 
@@ -63,7 +63,7 @@ deslizantes quando há display disponível.
 
 ## As duas ferramentas, e por que são duas
 
-**`fwikit.acustico`** — propagador acústico 2D escrito do zero em NumPy, 476
+**`fwikit.acustico`** — propagador acústico 2D escrito do zero em NumPy, 486
 linhas (com mais comentário que código), sem GPU. Transparente: cada termo está visível. É com ele que o
 gradiente adjunto é derivado e *verificado*.
 
@@ -80,13 +80,16 @@ saber o que fazer quando o resultado sai errado.
 
 **1. O núcleo do PyFWI é elástico; o caso acústico é o limite `vs = 0`.**
 Não existe solver acústico separado. A aula 05 comprova: com `vs = 0`,
-`‖σxx − σzz‖/‖σxx‖ = 4×10⁻⁷` e `σxz = 0` *exatamente*. A pressão que
-`components=0` devolve é `−(σxx+σzz)/2`.
+`‖σxx − σzz‖/‖σxx‖ = 4×10⁻⁷` e `σxz = 0` *exatamente*. E atenção ao sinal:
+`components=0` devolve `(σxx+σzz)/2`, que é `−p` — pressão com a polaridade
+invertida.
 
-**2. `inpa['acq_type']` precisa ser 1 (superfície) ou 2 (crosswell).**
-O valor 0 não levanta erro: mapeia os receptores errado e devolve um
-sismograma plausível e errado — sem ápice na *moveout*. Encontrado por
-validação cruzada contra o `fwikit` (aula 05).
+**2. `inpa['acq_type']` tem de casar com a geometria — e o descuido é silencioso.**
+Os três valores são válidos (`0` = crosswell, `1` = superfície, `2` = ambos).
+Usar `0` com posições de superfície não levanta erro: o PyFWI compila o kernel
+de poço, mapeia os receptores numa vertical e devolve um sismograma plausível e
+errado — sem ápice na *moveout*. Encontrado por validação cruzada contra o
+`fwikit` (aula 05).
 
 **3. O adjunto da extensão de bordas é somar, não recortar.**
 O modelo é estendido com `mode='edge'` antes de propagar, replicando os pixels
@@ -127,9 +130,9 @@ testam se ele está **certo**:
 | 9 | Distância crítica ≠ distância de cruzamento na refração |
 
 O gradiente adjunto é o item que mais importa, e passa nos três testes padrão:
-razão 0,9999–1,0006 nas diferenças finitas pontuais, erro máximo de 0,02% na
-derivada direcional (estável em 40× de faixa em α), e ordem 2,00 no teste de
-Taylor.
+razão 0,9999–1,0006 nas diferenças finitas pontuais, 0,02% de erro máximo na
+derivada direcional de `verificar_fisica.py` (0,07% na aula 09, que varre 40×
+de faixa em α), e ordem 2,00 no teste de Taylor.
 
 ---
 
@@ -137,7 +140,7 @@ Taylor.
 
 ```
 .
-├── curso_fwi_completo.pdf     # o PDF teórico (56 páginas)
+├── curso_fwi_completo.pdf     # o PDF teórico (61 páginas)
 ├── menu.py                    # lançador interativo
 ├── requirements.txt
 ├── aulas/                     # 15 aulas, uma por arquivo
@@ -160,7 +163,8 @@ Taylor.
 ## Compatibilidade: por que existe `fwikit/compat.py`
 
 O PyFWI 0.1.10 foi publicado junto com o artigo do autor e congelado no tempo.
-Ele importa três símbolos que já não existem:
+Ele importa três símbolos de namespaces que não existem mais ou estão a
+caminho disso:
 
 ```python
 from numpy.lib.function_base import kaiser       # removido no numpy 2.0

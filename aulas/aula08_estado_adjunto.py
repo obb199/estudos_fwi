@@ -269,8 +269,13 @@ def main():
         Quatro coisas aparecem em praticamente todo gradiente. Saber
         identifica-las evita interpretar artefato como geologia.
 
-        1. O SINAL. Lembre que a atualizacao e m <- m - alpha * g. Onde g e
-           negativo a velocidade vai AUMENTAR. Confira sempre o sinal contra a
+        1. O SINAL -- E EM QUAL PARAMETRO. A atualizacao e m <- m - alpha * g,
+           e o sentido depende do parametro em que g esta escrito. Em
+           VELOCIDADE (g_c = dJ/dc, que e o que estas figuras mostram e o que
+           `gradiente_adjunto` devolve por padrao), g_c < 0 faz c AUMENTAR. Em
+           VAGAROSIDADE AO QUADRADO (g_m = dJ/dm, a forma em que a derivacao
+           acima sai) o sentido se INVERTE: como dm/dc = -2/c^3 < 0, e g_m > 0
+           que faz a velocidade aumentar. Confira sempre o sinal contra a
            perturbacao que voce sabe que existe -- e o teste mais barato de
            sanidade.
 

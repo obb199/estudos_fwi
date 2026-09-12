@@ -103,9 +103,21 @@ checa("t0 = 1/f0 trunca menos de 0.1% da amplitude de pico",
 
 # ==========================================================================
 secao("5. Reducao acustica e relacoes elasticas")
-rho, lam, mu = 2200.0, 1.1e10, 0.0
-checa("com mu=0, vp = sqrt((lam+2mu)/rho) = sqrt(K/rho)",
-      abs(np.sqrt((lam + 2 * mu) / rho) - np.sqrt((lam + 2 * mu / 3) / rho)) < 1e-9)
+rho, lam = 2200.0, 1.1e10
+# K = lam + 2mu/3. A igualdade vp = sqrt(K/rho) vale SO no limite mu -> 0:
+# o teste confere os dois lados -- que com mu != 0 elas DIFEREM (senao o teste
+# nao testaria nada) e que com mu = 0 elas coincidem e lam passa a SER K.
+def _vp(mu):
+    return np.sqrt((lam + 2 * mu) / rho)
+def _vp_de_K(mu):
+    return np.sqrt((lam + 2 * mu / 3) / rho)
+_mu = 0.9e10
+_difere = abs(_vp(_mu) - _vp_de_K(_mu)) / _vp(_mu) > 0.1
+_coincide = (abs(_vp(0.0) - _vp_de_K(0.0)) < 1e-9
+             and abs((lam + 2 * 0.0 / 3) - lam) < 1e-9)
+checa("vp = sqrt(K/rho) so no limite mu -> 0 (e K -> lam)",
+      _difere and _coincide,
+      f"mu=9e9: {_vp(_mu):.0f} vs {_vp_de_K(_mu):.0f} m/s; mu=0: iguais")
 nu = 0.25
 checa("Poisson 0.25 -> vp/vs = sqrt(3)",
       abs(np.sqrt((2 - 2 * nu) / (1 - 2 * nu)) - np.sqrt(3)) < 1e-9)
@@ -173,8 +185,15 @@ for Q in (10.0, 20.0, 50.0, 100.0):
     checa(f"Q={Q:>5.0f}: forma de alto Q 1/(2Q) aproxima tan(pi.gamma/2)",
           abs(exato - 1 / (2 * Q)) / exato < 3e-3,
           f"erro {100*abs(exato-1/(2*Q))/exato:.3f}%")
-checa("Q ciclos levam a amplitude a e^-pi",
-      abs(np.exp(-np.pi * 50 / 50) - np.exp(-np.pi)) < 1e-12)
+# "Q ciclos levam a amplitude a e^-pi" NAO e uma identidade trivial: sai da
+# formula de atenuacao A = exp(-w L / (2 Q c)) usada na aula 14. Percorrendo
+# L = Q comprimentos de onda (L = Q c / f), o expoente vira -pi Q / Q = -pi.
+_f, _c, _Q = 20.0, 2000.0, 37.0        # Q nao-redondo, de proposito
+_L = _Q * _c / _f                       # Q comprimentos de onda
+_A = np.exp(-2 * np.pi * _f * _L / (2 * _Q * _c))
+checa("Q ciclos levam a amplitude a e^-pi (via A = exp(-wL/2Qc))",
+      abs(_A - np.exp(-np.pi)) < 1e-12,
+      f"A = {_A:.6f} vs e^-pi = {np.exp(-np.pi):.6f}")
 
 # ==========================================================================
 secao("9. Refracao: distancia critica != distancia de cruzamento")
