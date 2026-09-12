@@ -136,7 +136,7 @@ def main():
         "origem (t=0 em offset 0). Nao carrega informacao de profundidade, e "
         "frequentemente e removida (mute).",
         "REFRACOES (head waves) -- retas com inclinacao 1/c das camadas mais "
-        "profundas, que CRUZAM a direta a partir de um offset critico. "
+        "profundas, que CRUZAM a direta a partir da DISTANCIA DE CRUZAMENTO. "
         "Dominam o offset longo. Sao a fonte mais rica de informacao de "
         "velocidade de grande escala para a FWI.",
         "REFLEXOES -- hiperboles. O apice esta em offset zero, no tempo de "
@@ -159,12 +159,20 @@ def main():
                      / (2 * z1 / c1 + 2 * (z2 - z1) / c2))
     t0_2 = 2 * z1 / c1 + 2 * (z2 - z1) / c2
     t_teo2 = np.sqrt(t0_2 ** 2 + (offsets / v_rms2) ** 2)
-    x_crit = 2 * z1 * np.sqrt((c2 + c1) / (c2 - c1))
+    # ATENCAO a nomenclatura: esta e a distancia de CRUZAMENTO (crossover),
+    # o offset em que a refracao ULTRAPASSA a onda direta. Nao confundir com a
+    # distancia CRITICA, 2 z1 tan(theta_c), em que a head wave apenas COMECA a
+    # existir -- ela e bem menor (1006 m contra 2291 m, neste modelo).
+    x_cross = 2 * z1 * np.sqrt((c2 + c1) / (c2 - c1))
+    theta_c = np.arcsin(c1 / c2)
+    x_crit = 2 * z1 * np.tan(theta_c)
     print()
     a.resultado("v_rms ate a base da camada 2", f"{v_rms2:.0f}", "m/s")
     a.resultado("t0 da reflexao da camada 1", f"{2*z1/c1:.3f}", "s")
     a.resultado("t0 da reflexao da camada 2", f"{t0_2:.3f}", "s")
-    a.resultado("offset critico da refracao c2", f"{x_crit:.0f}", "m")
+    a.resultado("distancia critica (head wave surge)", f"{x_crit:.0f}", "m")
+    a.resultado("distancia de cruzamento (ultrapassa a direta)",
+                f"{x_cross:.0f}", "m")
     print()
     print(f"    {'offset (m)':<14}{'direta (s)':<14}{'refl. 1 (s)':<14}"
           f"{'refl. 2 (s)':<14}")
@@ -334,9 +342,11 @@ def main():
         shot gather. Compare com o valor verdadeiro (1800 m/s). Qual o erro?
     """, dica="use o primeiro cruzamento por zero ou o pico, e np.polyfit.")
     a.exercicio(2, """
-        Encontre o offset critico a partir do qual a refracao da segunda camada
-        ultrapassa a onda direta. Compare com a previsao teorica
-        x_c = 2 z1 sqrt((c2+c1)/(c2-c1)).
+        Encontre no sismograma a distancia de CRUZAMENTO a partir da qual a
+        refracao da segunda camada ultrapassa a onda direta, e compare com
+        x_cross = 2 z1 sqrt((c2+c1)/(c2-c1)). Depois localize a distancia
+        CRITICA, 2 z1 tan(theta_c) com sin(theta_c) = c1/c2, onde a head wave
+        apenas comeca a existir. Confirme que as duas sao bem diferentes.
     """)
     a.exercicio(3, """
         Monte uma geometria crosswell (fontes num poco a esquerda, receptores num

@@ -121,7 +121,6 @@ def main():
     d_obs = (d_lim + ruido).astype(np.float32)
 
     print()
-    from fwikit.aula import Aula as _A
     a.resultado("malha", f"{nz} x {nx}")
     a.resultado("tiros / receptores", f"{geom.ns} / {geom.nr}")
     a.resultado("razao sinal/ruido do dado", f"{snr_db:.0f}", "dB")

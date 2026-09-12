@@ -78,8 +78,10 @@ def main():
     """)
     a.lista([
         "sigma_xz = 0 -- nao existe tensao cisalhante.",
-        "sigma_xx = sigma_zz = lambda (dvx/dx + dvz/dz) -- as tensoes normais "
-        "ficam IGUAIS entre si. O tensor de tensoes vira isotropico.",
+        "d(sigma_xx)/dt = d(sigma_zz)/dt = lambda (dvx/dx + dvz/dz) -- as duas "
+        "tensoes normais passam a obedecer a MESMA equacao. Como partem de "
+        "zero, permanecem iguais em todo instante: sigma_xx = sigma_zz. "
+        "O tensor de tensoes vira isotropico.",
         "Um tensor isotropico e descrito por um unico escalar. Definimos a "
         "PRESSAO como esse escalar, com o sinal trocado (compressao positiva).",
     ])
@@ -110,6 +112,23 @@ def main():
     """)
     a.eq("(1 / c(x)^2) d2p/dt2  -  laplaciano(p)  =  s(t) delta(x - xs)",
          rotulo="EQUACAO ACUSTICA -- densidade constante")
+    a.aviso("""
+        Um detalhe de notacao que quase todo texto omite e que custa horas de
+        depuracao: o `s` da equacao de SEGUNDA ordem NAO e o mesmo `s` da
+        equacao de primeira ordem.
+
+        Ao derivar dp/dt no tempo para eliminar v, o termo-fonte vira
+        (1/K) ds/dt. Escrever "+ s" na equacao de segunda ordem e redefinir a
+        fonte -- pratica padrao na literatura, mas com uma consequencia
+        concreta: a wavelet EFETIVA das duas formulacoes difere por uma
+        DERIVADA TEMPORAL.
+
+        E por isso que dois codigos corretos, um em velocidade-tensao (1a
+        ordem, como o PyFWI) e outro em pressao (2a ordem, como o fwikit),
+        produzem tracos com formas diferentes alimentados pela mesma Ricker.
+        Na aula 05 medimos isso: a correlacao bruta entre os dois e de apenas
+        +0.12, e sobe para +0.85 depois de derivar um deles no tempo.
+    """)
     a.dica("""
         Esta ultima e a equacao que `fwikit.acustico` resolve, e e a mesma que
         aparece na formulacao classica de FWI acustica (Tarantola, 1984).
@@ -187,9 +206,18 @@ def main():
          rotulo="Ricker")
     a.texto("""
         f0 e a frequencia de PICO do espectro (nao a maxima, e nao a media --
-        confundir isso e um erro classico). O deslocamento t0 existe para tornar
-        a wavelet praticamente causal: como a Ricker e simetrica e nao nula em
-        t < 0, usa-se t0 = 1/f0, que coloca ~99% da energia em t > 0.
+        confundir isso e um erro classico).
+
+        O deslocamento t0 existe porque a Ricker e simetrica em torno do pico e
+        nao se anula para t < 0: sem atraso, ela seria cortada na origem, e o
+        degrau resultante sujaria o espectro. A convencao t0 = 1/f0 nao e
+        arbitraria -- e justamente onde a amplitude truncada cai abaixo de 0.1%
+        do pico:
+
+            t0 = 0.6/f0  ->  17.5%  da amplitude de pico truncada
+            t0 = 0.8/f0  ->   2.1%
+            t0 = 1.0/f0  ->   0.10%   <- a convencao
+            t0 = 1.2/f0  ->   0.002%
     """)
 
     dt = 1.0e-3

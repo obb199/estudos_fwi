@@ -143,8 +143,8 @@ está em \arq{aulas/}, e a caixa de ferramentas compartilhada em \arq{fwikit/}.
 \section*{As duas ferramentas, e por que são duas}
 
 \textbf{\arq{fwikit.acustico}} é um propagador acústico 2D escrito do zero em
-NumPy, com cerca de 200 linhas. Não usa GPU, não é rápido, e é inteiramente
-transparente: cada termo está visível. É com ele que derivamos e
+NumPy, com 476 linhas --- metade delas comentário. Não usa GPU, não é rápido, e
+é inteiramente transparente: cada termo está visível. É com ele que derivamos e
 \emph{verificamos} o gradiente adjunto.
 
 \textbf{PyFWI} é uma implementação de produção em OpenCL: elástica, com CPML e
@@ -161,6 +161,21 @@ pelo código do curso}, executado no ambiente descrito no
 contraria a expectativa usual --- e há pelo menos um caso assim, no
 Capítulo 13 --- o texto discute o resultado obtido, não o esperado.
 \end{atencao}
+
+\begin{pratica}[As fórmulas são verificadas, não apenas citadas]
+O repositório traz \arq{testes/verificar\_fisica.py}, com 29 verificações que
+confrontam cada fórmula usada aqui com sua derivação analítica ou com uma
+referência independente: os coeficientes de diferenças finitas contra os
+momentos de Taylor, o limite CFL contra a análise de von Neumann, a Ricker
+contra seu espectro analítico, as reduções elásticas, o gradiente adjunto
+contra diferenças finitas (teste de Taylor), os gradientes dos termos de
+regularização, e o modelo constant-$Q$.
+
+Elas rodam em poucos minutos:
+\begin{lstlisting}[language=bash]
+python testes/verificar_fisica.py
+\end{lstlisting}
+\end{pratica}
 
 % =====================================================================
 \part*{\centering\color{azulfwi} Parte I --- Física e numérica da propagação}
@@ -286,8 +301,10 @@ fluido. As consequências são imediatas:
 
 \begin{enumerate}[leftmargin=*]
 \item $\sigma_{xz} = 0$: não existe tensão cisalhante;
-\item $\sigma_{xx} = \sigma_{zz} = \lambda\,(\partial_x v_x + \partial_z v_z)$:
-as tensões normais ficam \emph{iguais}. O tensor vira isotrópico;
+\item $\partial_t\sigma_{xx} = \partial_t\sigma_{zz}
+ = \lambda\,(\partial_x v_x + \partial_z v_z)$: as duas tensões normais passam a
+obedecer à \emph{mesma} equação. Como partem de zero, permanecem iguais em todo
+instante --- $\sigma_{xx} = \sigma_{zz}$ --- e o tensor vira isotrópico;
 \item um tensor isotrópico é descrito por um único escalar. Definimos a
 \textbf{pressão} como esse escalar, com sinal trocado:
 \end{enumerate}
@@ -330,6 +347,25 @@ e, supondo densidade constante,
 
 A equação \eqref{eq:acustica} é a que o \arq{fwikit.acustico} resolve, e a
 mesma da formulação clássica de FWI acústica (Tarantola, 1984).
+
+\begin{armadilha}[O $s$ das duas equações não é o mesmo]
+Quase todo texto omite isto, e custa horas de depuração. Ao derivar
+$\partial_t p$ no tempo para eliminar $\mathbf{v}$, o termo-fonte de
+\eqref{eq:acustico1a} vira $(1/K)\,\partial_t s$. Escrever ``$+\,s$'' em
+\eqref{eq:acustico_rho} e \eqref{eq:acustica} é \emph{redefinir} a fonte ---
+prática padrão, mas com consequência concreta:
+
+\begin{center}
+\emph{a wavelet efetiva das duas formulações difere por uma derivada temporal.}
+\end{center}
+
+É por isso que dois códigos \textbf{corretos} --- um em velocidade--tensão
+(1\textsuperscript{a} ordem, como o PyFWI) e outro em pressão
+(2\textsuperscript{a} ordem, como o \arq{fwikit}) --- produzem traços de forma
+diferente alimentados pela mesma Ricker. O Capítulo \ref{cap:pyfwi} mede isso:
+a correlação bruta entre os dois é de $+0{,}12$, e sobe para $+0{,}85$ depois
+de derivar um deles no tempo.
+\end{armadilha}
 
 \begin{teoria}[Por que invertemos em $m = 1/c^2$, e não em $c$]
 A equação \eqref{eq:acustica} é \emph{linear} no parâmetro
@@ -390,7 +426,10 @@ w(t) = \left[1 - 2\bigl(\pi f_0 (t-t_0)\bigr)^{2}\right]
 \end{equation}
 
 $f_0$ é a frequência de \emph{pico} do espectro --- não a máxima, não a média.
-O atraso $t_0 = 1/f_0$ torna a wavelet praticamente causal.
+O atraso $t_0 = 1/f_0$ torna a wavelet praticamente causal, e o valor não é
+arbitrário: é onde a amplitude truncada em $t<0$ cai abaixo de $0{,}1\%$ do
+pico ($17{,}5\%$ com $t_0 = 0{,}6/f_0$; $2{,}1\%$ com $0{,}8/f_0$;
+$0{,}10\%$ com $1{,}0/f_0$).
 
 \begin{figure}[htbp]
 \centering
@@ -515,12 +554,25 @@ G = \frac{\lambda_{\min}}{\Delta h} = \frac{c_{\min}}{f_{\max}\,\Delta h},
 G \gtrsim \begin{cases} 15\text{--}20 & \text{O(2)}\\ 8\text{--}10 & \text{O(4)}\\ 4\text{--}5 & \text{O(8)}\end{cases}
 \end{equation}
 
+\begin{atencao}[Uma precisão sobre a curva de dispersão]
+A curva mostrada é a do operador \textbf{espacial} isolado (esquema
+semi-discreto, tempo contínuo). A discretização \emph{temporal} acrescenta um
+erro próprio, e o detalhe interessante é que ele tem sinal \textbf{oposto}: o
+\emph{leap-frog} adianta a fase, o estêncil espacial atrasa, e os dois se
+cancelam parcialmente.
+
+Medido para O(4) com $G=6$: a curva semi-discreta dá $0{,}9939$, enquanto o
+esquema completo dá $0{,}9980$ ($C=0{,}3$) ou $1{,}0055$ ($C=0{,}5$). O erro
+real é \emph{menor} que o previsto pela curva espacial sozinha --- ela é uma
+estimativa conservadora, que é exatamente o que se quer para dimensionar malha.
+\end{atencao}
+
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{../saidas/aula02/01_dispersao_numerica.png}
-\caption{Esquerda: curva de dispersão numérica por ordem espacial. Direita:
-traço a 2{,}4\,km da fonte em meio homogêneo, com $G=9{,}5$ e $G=2{,}4$.
-A cauda no traço vermelho não existe na física.}
+\caption{Esquerda: dispersão do operador \emph{espacial} por ordem (esquema
+semi-discreto). Direita: traço a 2{,}4\,km da fonte em meio homogêneo, com
+$G=9{,}5$ e $G=2{,}4$. A cauda no traço vermelho não existe na física.}
 \end{figure}
 
 \section{Receita de dimensionamento}
@@ -648,7 +700,11 @@ sobrepostas: onda direta (reta), reflexões (hipérboles).}
 \item \textbf{Onda direta} --- reta de inclinação $1/c_1$, passa pela origem.
 Não carrega informação de profundidade; frequentemente é removida.
 \item \textbf{Refrações} (\emph{head waves}) --- retas de inclinação $1/c_2$
-que cruzam a direta a partir de um \emph{offset} crítico. Dominam o
+que cruzam a direta a partir da \textbf{distância de cruzamento}
+$x_{cross} = 2h_1\sqrt{(v_2{+}v_1)/(v_2{-}v_1)}$ --- que não se confunde com a
+\emph{distância crítica} $2h_1\tan\theta_c$, onde a \emph{head wave} apenas
+começa a existir e que é bem menor (1006\,m contra 2291\,m no modelo da
+aula 04). Dominam o
 \emph{offset} longo e são a fonte mais rica de informação de velocidade de
 grande escala.
 \item \textbf{Reflexões} --- hipérboles, $t(x)^2 = t_0^2 + x^2/v_{rms}^2$.
@@ -788,6 +844,40 @@ elástico e acústico são as ondas S e conversões P--S --- com norma comparáv
 à do próprio dado.}
 \end{figure}
 
+\section{Por que as formas diferem (e não é erro de nenhum dos dois)}
+
+A cinemática bate, mas sobrepondo os traços a \emph{forma} do pulso difere. A
+explicação é exata e já está no Capítulo \ref{cap:acustico}: as duas
+formulações têm wavelets efetivas que diferem por uma derivada temporal.
+
+Medindo a correlação média sobre todos os receptores:
+
+\begin{center}
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Comparação} & \textbf{Correlação média} \\
+\midrule
+traços como saem dos dois códigos & $+0{,}1235$ \\
+derivando no tempo o traço do \arq{fwikit} & $\mathbf{+0{,}8501}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Sem ajuste e sem parâmetro livre: é exatamente a relação prevista. Os dois
+códigos estão certos; o que diferia era a \textbf{convenção de fonte}, não a
+física.
+
+\begin{pratica}[As perguntas certas ao comparar dois códigos de onda]
+Antes de suspeitar da física, verifique a convenção de fonte:
+\begin{itemize}[leftmargin=*]
+\item a formulação é de primeira ou de segunda ordem?
+\item a fonte entra na pressão, na tensão ou na velocidade de partícula?
+\item há divisão por $\Delta h^{2}$ (discretização da delta)?
+\end{itemize}
+Cada uma dessas escolhas muda a wavelet efetiva --- e nenhuma delas aparece no
+sismograma com uma etiqueta.
+\end{pratica}
+
 \section{Validação cruzada: como esta comparação achou um bug}
 \label{sec:validacao}
 
@@ -841,10 +931,10 @@ Levantada lendo o código-fonte, porque não existe na documentação.
 \texttt{dh} & sim & espaçamento da malha (m) \\
 \texttt{dt} & sim & passo de tempo pedido (veja o reescalonamento) \\
 \texttt{t} & sim & duração do registro (s) \\
-\texttt{sdo} & não (2) & ordem espacial \emph{real}: 4 ou 8 \\
+\texttt{sdo} & não ($=4$) & ordem espacial \emph{real}: 4 ou 8; omitir equivale a 4 \\
 \texttt{npml} & não (0) & espessura da CPML em pontos \\
 \texttt{pmlR} & com \texttt{npml} & coef.\ de reflexão teórico (ex.\ 1e-5) \\
-\texttt{pml\_dir} & com \texttt{npml} & 0 = só $x$, 1 = só $z$, 2 = ambas \\
+\texttt{pml\_dir} & com \texttt{npml} & 0 = só $z$; 1 = só $x$; 2 = ambas; 3 = ambas sem o topo \\
 \texttt{acq\_type} & não (1) & 1 = superfície, 2 = \emph{crosswell} \\
 \texttt{device} & não (0) & índice do dispositivo OpenCL \\
 \texttt{seimogram\_shape} & não ('2d') & '2d' $\to (n_t, n_r n_s)$; '3d' $\to (n_t,n_r,n_s)$ \\
@@ -857,6 +947,22 @@ Levantada lendo o código-fonte, porque não existe na documentação.
 \bottomrule
 \end{longtable}
 \end{center}
+
+\begin{armadilha}[Três entradas fáceis de documentar errado]
+\textbf{\texttt{pml\_dir} é invertido em relação à intuição.} No código, o
+valor 0 \emph{zera} a PML em $x$ (sobra só $z$) e o valor 1 zera a PML em $z$
+(sobra só $x$) --- o número indica a direção que você \emph{desliga}. O valor 3
+mantém as duas mas remove a PML do \emph{topo}, que é como se modela superfície
+livre.
+
+\textbf{\texttt{sd} não é passo de otimização.} É um peso que multiplica os
+dados \emph{calculados} (\texttt{prepare\_residual(d\_est, sd)}), enquanto os
+observados entram com peso 1. Deixe em $1{,}0$.
+
+\textbf{Omitir \texttt{sdo} não dá ordem 2.} O código faz
+\texttt{self.sdo = sdo/2} e usa 2 como padrão interno, o que corresponde à
+ordem espacial \emph{real} 4.
+\end{armadilha}
 
 \begin{armadilha}[O \emph{typo} que o pacote carrega]
 A chave é \texttt{seimogram\_shape}, não \texttt{seismogram\_shape}. Escrever
@@ -1291,15 +1397,23 @@ só atualiza a parte rasa.
 
 \section{Pré-condicionamento}
 
+\aula{10}
+
 \begin{teoria}[O que o pré-condicionamento realmente é]
 A atualização ideal de Newton seria $\delta\mathbf{m} = -H^{-1}\mathbf{g}$, com
 $H$ a Hessiana --- grande demais para ser montada. O pré-condicionador $P$ é
 uma aproximação barata de $H^{-1}$.
 
-A Hessiana de Gauss--Newton tem, na diagonal, exatamente a \textbf{energia do
-campo} em cada ponto --- que é a iluminação. Por isso dividir o gradiente pela
-energia do campo direto \emph{não} é um truque cosmético: é uma aproximação
-diagonal legítima de $H^{-1}$. É o que o PyFWI chama de
+A diagonal de $H_{GN}$ é bem \textbf{aproximada} pela energia do campo direto
+em cada ponto --- a iluminação. A aproximação tem nome e referência: é o
+\emph{pseudo-Hessiano} de Shin \emph{et al.} (2001), obtido desprezando as
+contribuições cruzadas entre pontos do modelo.
+
+É uma aproximação, não uma identidade --- a diagonal exata de $J'^{T}J'$
+envolve também a função de Green até os receptores. Mas é boa o bastante, e
+barata o bastante, para ser o pré-condicionador padrão. Dividir o gradiente
+pela energia do campo, portanto, não é um truque cosmético: é uma aproximação
+diagonal justificada de $H^{-1}$. É o que o PyFWI faz em
 \texttt{energy\_balancing}.
 
 O que ele \textbf{não} faz: não corrige cycle skipping, não inventa informação
@@ -2049,6 +2163,13 @@ A(\omega) = \exp\!\left[-\frac{\omega L}{2\,Q\,c(\omega)}\right].
 \label{eq:kjartansson}
 \end{equation}
 
+\begin{atencao}[Precisão da forma usada]
+O fator de atenuação em \eqref{eq:kjartansson} usa $1/(2Q)$, válido para
+$Q \gg 1$. A forma exata de Kjartansson traz $\tan(\pi\gamma/2)$ no lugar. A
+diferença medida é de $0{,}25\%$ em $Q=10$ e $0{,}06\%$ em $Q=20$ ---
+irrelevante na faixa sísmica, mas vale saber que a expressão é uma aproximação.
+\end{atencao}
+
 No domínio do tempo, essa dependência de potência conduz a operadores de
 ordem \textbf{fracionária} --- por isso a implementação viscoacústica é
 substancialmente mais trabalhosa que a acústica, e costuma ser feita com
@@ -2065,7 +2186,7 @@ $f_0 = 20$\,Hz, $c_0 = 2000$\,m/s, $L = 1500$\,m:
 \toprule
 $Q$ & $\gamma$ & \textbf{amplitude rel.} & $f$ de pico (Hz) \\
 \midrule
-$\infty$ & $3{,}2\times10^{-5}$ & 1{,}0000 & 20{,}0 \\
+$10\,000$ & $3{,}2\times10^{-5}$ & 1{,}0000 & 20{,}0 \\
 200 & $1{,}59\times10^{-3}$ & 0{,}7738 & 18{,}8 \\
 100 & $3{,}18\times10^{-3}$ & 0{,}6008 & 17{,}8 \\
 50  & $6{,}37\times10^{-3}$ & 0{,}3713 & 15{,}9 \\

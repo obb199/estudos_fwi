@@ -63,8 +63,8 @@ deslizantes quando há display disponível.
 
 ## As duas ferramentas, e por que são duas
 
-**`fwikit.acustico`** — propagador acústico 2D escrito do zero em NumPy, ~400
-linhas, sem GPU. Transparente: cada termo está visível. É com ele que o
+**`fwikit.acustico`** — propagador acústico 2D escrito do zero em NumPy, 476
+linhas (com mais comentário que código), sem GPU. Transparente: cada termo está visível. É com ele que o
 gradiente adjunto é derivado e *verificado*.
 
 **PyFWI** — implementação de produção em OpenCL: elástica, com CPML e
@@ -76,7 +76,7 @@ saber o que fazer quando o resultado sai errado.
 
 ---
 
-## Três coisas que este curso descobriu rodando o código
+## Quatro coisas que este curso descobriu rodando o código
 
 **1. O núcleo do PyFWI é elástico; o caso acústico é o limite `vs = 0`.**
 Não existe solver acústico separado. A aula 05 comprova: com `vs = 0`,
@@ -95,19 +95,41 @@ tem de ser **dobrada de volta** sobre a borda. Esquecer isso valia **9% de
 erro** na derivada direcional — corrigido, a razão passou de 0,9118 para
 1,0001 (aula 09).
 
+**4. Os dois códigos discordavam na forma do pulso — e ambos estavam certos.**
+Ao passar da formulação de 1ª ordem (velocidade–tensão, PyFWI) para a de 2ª
+ordem (pressão, `fwikit`), o termo-fonte vira `(1/K)·∂s/∂t`. As wavelets
+efetivas diferem por **uma derivada temporal**. A correlação entre os traços
+sai de **+0,12 para +0,85** aplicando essa derivada, sem nenhum parâmetro de
+ajuste (aulas 01 e 05).
+
 ---
 
 ## Verificação
 
-O gradiente adjunto do `fwikit` passa nos três testes padrão:
+```bash
+.venv/bin/python testes/verificar_fisica.py
+```
 
-| Teste | Resultado |
+29 verificações que confrontam cada fórmula do curso com sua derivação
+analítica ou com uma referência independente — não testam se o código roda,
+testam se ele está **certo**:
+
+| Bloco | O que é verificado |
 |---|---|
-| Diferenças finitas pontuais | razão 0,9999 – 1,0006 nos pontos de gradiente forte |
-| Derivada direcional | erro máximo **0,07%**, estável em 40× de faixa em α |
-| Teste de Taylor | ordem de `E₁` = **2,00 / 2,00 / 2,01 / 2,02** |
+| 1 | Coeficientes de diferenças finitas anulam os momentos de Taylor até a ordem esperada |
+| 2 | `C_limite = 2/√(ndim·S)` bate com von Neumann analítico (0,7071 / 0,6124 / 0,5546) |
+| 3 | A simulação é estável abaixo do limite CFL e estoura acima |
+| 4 | Ricker: pico em `f0`, média zero, `t0 = 1/f0` trunca < 0,1% da amplitude |
+| 5 | Reduções elásticas: `vp = √(K/ρ)` com μ=0; Poisson 0,25 → `vp/vs = √3` |
+| 6 | **Gradiente adjunto**: derivada direcional (erro 0,02%) e teste de Taylor (ordem de `E₁` = 2,00) |
+| 7 | Gradientes de Tikhonov, TV e modelo a priori contra diferenças finitas |
+| 8 | Kjartansson: `1/(2Q)` aproxima `tan(πγ/2)`; Q ciclos levam a amplitude a `e^-π` |
+| 9 | Distância crítica ≠ distância de cruzamento na refração |
 
-Reproduza com `.venv/bin/python menu.py 9`.
+O gradiente adjunto é o item que mais importa, e passa nos três testes padrão:
+razão 0,9999–1,0006 nas diferenças finitas pontuais, erro máximo de 0,02% na
+derivada direcional (estável em 40× de faixa em α), e ordem 2,00 no teste de
+Taylor.
 
 ---
 
@@ -127,6 +149,8 @@ Reproduza com `.venv/bin/python menu.py 9`.
 │   ├── inversao.py            # otimizadores, busca linear, regularização
 │   ├── verificacao.py         # testes de gradiente
 │   └── metricas.py            # erro relativo, correlação, R²
+├── testes/
+│   └── verificar_fisica.py    # 29 verificações de física e matemática
 ├── docs/curso_fwi.tex         # fonte LaTeX do PDF
 └── saidas/aulaXX/             # figuras geradas pelas aulas
 ```

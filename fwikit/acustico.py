@@ -9,8 +9,8 @@ POR QUE ESCREVER DO ZERO SE EXISTE PyFWI/Devito?
 Porque na sua dissertacao voce vai SUBSTITUIR o operador de propagacao
 (acustico -> viscoacustico de Kjartansson) e REESCREVER o adjunto
 correspondente. Isso so e possivel se voce souber exatamente onde cada
-termo entra. Este modulo e deliberadamente transparente: ~200 linhas,
-sem GPU, sem abstracao. O PyFWI entra depois como implementacao de
+termo entra. Este modulo e deliberadamente transparente: sem GPU, sem
+abstracao, e com mais comentario que codigo. O PyFWI entra depois como implementacao de
 producao e benchmark.
 
 FORMULACAO
@@ -120,9 +120,10 @@ class Config:
 
             fator ~ 0.25 / n_abs
 
-        que entrega cerca de -17 dB de reflexao com n_abs = 30 e -19 dB com
-        n_abs = 45. Para comparacao, uma CPML bem implementada chega a
-        -40/-60 dB. E por isso que codigos de producao usam CPML.
+        que entrega -16.5 dB de reflexao com n_abs = 30 e -18.4 dB com
+        n_abs = 45 (medido na aula 03). Para comparacao, a CPML do PyFWI
+        chega a -51 dB com 10 pontos e -70 dB com 20 (medido na aula 06).
+        E por isso que codigos de producao usam CPML.
         """
         if self.fator_abs is not None:
             return self.fator_abs
@@ -157,19 +158,28 @@ class Geometria:
 # --------------------------------------------------------------------------
 def cfl(c_max: float, dt: float, dh: float, ordem: int = 4, ndim: int = 2) -> float:
     """
-    Numero de Courant efetivo.  Criterio de estabilidade do esquema
-    leap-frog com diferencas centradas de ordem `ordem`:
+    Numero de Courant  C = c_max * dt / dh.
 
-        dt <= dh / (c_max * sqrt(ndim) * sqrt(soma|ck|) / 2)
-
-    Na pratica usamos a forma classica  C = c_max dt / dh  e comparamos com
-    um limite que depende da ordem espacial (ver `cfl_limite`).
+    A simulacao e estavel enquanto C <= `cfl_limite(ordem, ndim)`.
     """
     return c_max * dt / dh
 
 
 def cfl_limite(ordem: int = 4, ndim: int = 2) -> float:
-    """Limite teorico de estabilidade de von Neumann para o esquema."""
+    """
+    Limite de estabilidade de von Neumann para o esquema leap-frog.
+
+    Substituindo uma onda plana no esquema discreto, o fator de amplificacao
+    so tem modulo 1 enquanto  c^2 dt^2 Lambda_max <= 4, onde Lambda_max e o
+    maior autovalor do laplaciano discreto. Esse maximo ocorre em k*dh = pi e
+    vale  ndim * S / dh^2  com  S = |c0| + 2 soma|ck|.  Logo
+
+        C_limite = 2 / sqrt(ndim * S).
+
+    Da 0.7071 (O2), 0.6124 (O4) e 0.5546 (O8) em 2D -- ordem espacial MAIOR
+    aperta o limite, porque o estencil mais largo amplifica mais os numeros
+    de onda altos.
+    """
     c = COEF_D2[ordem]
     soma = abs(c[0]) + 2 * np.abs(c[1:]).sum()
     return float(2.0 / np.sqrt(ndim * soma))

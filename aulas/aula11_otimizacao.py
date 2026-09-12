@@ -19,7 +19,7 @@ from fwikit.acustico import (Acustico2D, Config, Geometria,   # noqa: E402
 from fwikit.inversao import (descida_maxima, gradiente_conjugado,  # noqa: E402
                              lbfgs, limitar, suavizar,
                              precondicionar_profundidade)
-from fwikit.metricas import resumo, imprimir_resumo, erro_relativo_percentual  # noqa: E402
+from fwikit.metricas import resumo, erro_relativo_percentual  # noqa: E402
 
 
 def main():

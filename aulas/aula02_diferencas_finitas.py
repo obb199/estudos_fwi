@@ -203,10 +203,23 @@ def main():
     ax[0].axhspan(0.99, 1.01, color="green", alpha=0.12)
     ax[0].set_xlabel("G = pontos por comprimento de onda")
     ax[0].set_ylabel("c_numerico / c_exato")
-    ax[0].set_title("dispersao numerica (faixa verde: erro < 1%)")
+    ax[0].set_title("dispersao numerica espacial (faixa verde: erro < 1%)")
     ax[0].set_ylim(0.75, 1.03)
     ax[0].legend(fontsize=8)
     ax[0].invert_xaxis()
+
+    a.aviso("""
+        Uma precisao sobre a curva da esquerda: ela e a dispersao do operador
+        ESPACIAL isolado (esquema semi-discreto, tempo continuo). A
+        discretizacao TEMPORAL acrescenta um erro proprio, e o detalhe
+        interessante e que ele tem sinal OPOSTO -- o leap-frog adianta a fase,
+        o estencil espacial atrasa, e os dois se cancelam parcialmente.
+
+        Medido para O(4): com G = 6, a curva semi-discreta da 0.9939, enquanto
+        o esquema completo da 0.9980 (C = 0.3) ou 1.0055 (C = 0.5). Ou seja, o
+        erro real e MENOR que o previsto pela curva espacial sozinha -- ela e
+        uma estimativa conservadora, que e o que se quer para dimensionar malha.
+    """)
 
     # demonstracao pratica: mesmo modelo, duas malhas
     a.texto("""

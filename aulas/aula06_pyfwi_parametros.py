@@ -13,7 +13,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np                               # noqa: E402
 import fwikit                                    # noqa: E402
 from fwikit.aula import Aula                     # noqa: E402
-from fwikit import plot                          # noqa: E402
 
 
 def main():
@@ -31,7 +30,6 @@ def main():
 
     try:
         import PyFWI.acquisition as acq
-        import PyFWI.model_dataset as md
         import PyFWI.wave_propagation as wave
     except Exception as exc:
         a.aviso(f"PyFWI indisponivel ({exc}). Rode a aula 00.")
@@ -50,20 +48,35 @@ def main():
          ["dt", "sim", "passo de tempo pedido (veja o reescalonamento abaixo)"],
          ["t", "sim", "duracao do registro (s)"],
          ["fdom", "sim*", "frequencia dominante (usada por voce, na Source)"],
-         ["sdo", "nao (2)", "ordem espacial REAL: 4 ou 8"],
+         ["sdo", "nao (=4)", "ordem espacial REAL: 4 ou 8 (omitir equivale a 4)"],
          ["npml", "nao (0)", "espessura da CPML em pontos"],
          ["pmlR", "com npml", "coef. de reflexao teorico da CPML (ex. 1e-5)"],
-         ["pml_dir", "com npml", "0=so x, 1=so z, 2=ambas"],
+         ["pml_dir", "com npml", "0 = so z; 1 = so x; 2 = ambas; 3 = ambas sem o topo"],
          ["acq_type", "nao (1)", "1 = superficie, 2 = crosswell"],
          ["device", "nao (0)", "indice do dispositivo OpenCL"],
          ["seimogram_shape", "nao ('2d')", "'2d' -> (nt, nr*ns); '3d' -> (nt, nr, ns)"],
          ["g_smooth", "nao (0)", "sigma da suavizacao gaussiana do gradiente"],
          ["energy_balancing", "nao (False)", "normaliza o gradiente pela iluminacao"],
          ["cost_function_type", "nao ('l2')", "funcional de erro"],
-         ["sd", "nao (1.0)", "escala do passo (Virieux et al., 2009)"],
+         ["sd", "nao (1.0)", "peso aplicado aos dados CALCULADOS no residuo"],
          ["grad_coeff", "nao ([1,1,1])", "peso relativo de vp, vs, rho no gradiente"],
          ["tv / tikhonov", "nao", "dicionarios de regularizacao (aula 13)"],
          ["prior_model", "nao", "modelo a priori para regularizacao (aula 13)"]])
+    a.aviso("""
+        Tres detalhes desta tabela que so se descobre lendo o fonte:
+
+        1. `pml_dir` e FACIL de inverter. No codigo, 0 zera a PML em x (sobra
+           so z) e 1 zera a PML em z (sobra so x) -- ou seja, o numero indica
+           qual direcao voce DESLIGA, nao qual mantem. O valor 3 mantem as duas
+           mas remove a PML do TOPO, que e como se modela superficie livre.
+
+        2. `sd` nao e passo de otimizacao: e um peso que multiplica os dados
+           CALCULADOS (`prepare_residual(d_est, sd)`), enquanto os observados
+           entram com peso 1. Deixe em 1.0 a menos que saiba o que quer.
+
+        3. Omitir `sdo` NAO da ordem 2: o codigo faz `self.sdo = sdo/2` e usa 2
+           como padrao interno, o que corresponde a ordem espacial REAL 4.
+    """)
     a.aviso("""
         Note o typo no nome da chave: e `seimogram_shape`, nao
         `seismogram_shape`. Escrever certo faz o PyFWI ignorar a chave em

@@ -163,11 +163,18 @@ def main():
 
             dm = - P g
 
-        A Hessiana de Gauss-Newton tem na diagonal exatamente a ENERGIA DO
-        CAMPO em cada ponto -- que e a iluminacao. Por isso dividir o gradiente
-        pela energia do campo direto nao e um truque cosmetico: e uma
-        aproximacao diagonal legitima de H^(-1). E o que o PyFWI chama de
-        `energy_balancing`.
+        A diagonal da Hessiana de Gauss-Newton e bem APROXIMADA pela energia
+        do campo direto em cada ponto -- a iluminacao. Essa aproximacao tem
+        nome e referencia: e o pseudo-Hessiano de Shin et al. (2001), obtido
+        desprezando as contribuicoes cruzadas entre pontos do modelo.
+
+        Note que e uma aproximacao, nao uma identidade: a diagonal exata de
+        J'^T J' envolve tambem a funcao de Green ate os receptores. Mas e boa o
+        bastante, e barata o bastante, para ser o pre-condicionador padrao.
+        Dividir o gradiente pela energia do campo, portanto, nao e um truque
+        cosmetico: e uma aproximacao diagonal justificada de H^(-1). E o que o
+        PyFWI faz em `energy_balancing` (dividindo por sqrt da energia
+        acumulada).
 
         O que o pre-condicionamento NAO faz: nao corrige cycle skipping, nao
         inventa informacao onde nao houve iluminacao, e nao substitui um bom

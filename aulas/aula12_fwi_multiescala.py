@@ -33,7 +33,6 @@ def main():
 
     try:
         import PyFWI.acquisition as acq
-        import PyFWI.model_dataset as md
         from PyFWI.fwi import FWI
         import PyFWI.wave_propagation as wave
     except Exception as exc:
@@ -182,6 +181,23 @@ def main():
          ["R^2", f"{resumo(m_ini['vp'], m_ini['vp'], vp)['r2']:.4f}",
           f"{met_mono['r2']:.4f}", f"{met_multi['r2']:.4f}"],
          ["tempo (min)", "--", f"{t_mono/60:.1f}", f"{t_multi/60:.1f}"]])
+
+    a.texto("""
+        Repare numa aparente contradicao da tabela: o erro relativo CAIU nas
+        duas inversoes, mas a correlacao com o modelo verdadeiro tambem caiu
+        (0.9333 no inicial contra 0.9173 no monoescala). Isso nao e erro.
+
+        As duas metricas medem coisas diferentes. O erro relativo L2 e
+        sensivel a escala e a amplitude; a correlacao e invariante a ambas e
+        so enxerga a FORMA espacial. Um modelo inicial suave pode ter forma
+        bem correlacionada com o verdadeiro (afinal, a tendencia esta certa) e
+        ainda assim errar muito em amplitude. Ao recuperar amplitude, a
+        inversao melhora o L2 e pode, no caminho, introduzir estrutura de alta
+        frequencia que piora ligeiramente a correlacao.
+
+        E exatamente por isso que se reporta mais de uma metrica. Uma so
+        sempre conta parte da historia.
+    """)
 
     melhor = "multiescala" if met_multi['erro_final_%'] < met_mono['erro_final_%'] \
         else "monoescala"

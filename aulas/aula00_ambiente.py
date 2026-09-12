@@ -200,7 +200,8 @@ def main():
     a.texto("""
         Duas ferramentas convivem no curso, de proposito:
 
-        `fwikit.acustico` -- propagador proprio, ~200 linhas de NumPy, sem GPU.
+        `fwikit.acustico` -- propagador proprio, ~480 linhas de NumPy (metade
+        delas comentario), sem GPU.
         Transparente: voce ve cada termo. E com ele que derivamos e verificamos
         o gradiente adjunto.
 

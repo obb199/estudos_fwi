@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np                               # noqa: E402
 import fwikit                                    # noqa: E402
-from fwikit.aula import Aula, mostrar_figuras    # noqa: E402
+from fwikit.aula import Aula                     # noqa: E402
 from fwikit import plot                          # noqa: E402
 
 
@@ -322,6 +322,56 @@ def main():
         primeira chegada se separam, existe erro de configuracao -- e e ai que
         voce deve olhar primeiro.
     """)
+    # --- por que as FORMAS diferem: convencao de fonte -------------------
+    a.secao("Por que as formas diferem (e nao e erro de nenhum dos dois)")
+    a.texto("""
+        A cinematica bate, mas se voce sobrepuser os tracos vai ver que a FORMA
+        do pulso difere. Isso tem uma explicacao exata, e ela vem da aula 01.
+
+        O PyFWI resolve o sistema de PRIMEIRA ordem (velocidade-tensao); o
+        fwikit resolve a forma de SEGUNDA ordem em pressao. Ao eliminar a
+        velocidade de particula para chegar na segunda ordem, o termo-fonte vira
+        (1/K) ds/dt. Ou seja: alimentadas com a MESMA Ricker, as duas
+        formulacoes tem wavelets EFETIVAS que diferem por uma derivada temporal.
+
+        Da para verificar isso numericamente.
+    """)
+
+    def normaliza(x):
+        return x / (np.abs(x).max() + 1e-30)
+
+    def correl_traco(a_, b_):
+        a_ = a_ - a_.mean(); b_ = b_ - b_.mean()
+        return float(np.dot(a_, b_) /
+                     (np.linalg.norm(a_) * np.linalg.norm(b_) + 1e-30))
+
+    cs_bruto, cs_deriv = [], []
+    for j in range(d_py.shape[1]):
+        tp, tm = normaliza(d_py[:, j]), normaliza(d_meu[:, j])
+        cs_bruto.append(correl_traco(tp, tm))
+        cs_deriv.append(correl_traco(tp, normaliza(np.gradient(tm, dt))))
+    print()
+    a.resultado("correlacao media, tracos como saem",
+                f"{np.mean(cs_bruto):+.4f}")
+    a.resultado("correlacao media, derivando o traco do fwikit",
+                f"{np.mean(cs_deriv):+.4f}")
+    print()
+    a.teoria("O que esse salto significa", f"""
+        A correlacao sai de {np.mean(cs_bruto):+.2f} para {np.mean(cs_deriv):+.2f}
+        aplicando UMA derivada temporal. Nao ha ajuste, nao ha parametro livre:
+        e exatamente a relacao prevista entre as duas formulacoes.
+
+        Isso encerra a comparacao de forma satisfatoria. Os dois codigos estao
+        certos; o que diferia era a CONVENCAO DE FONTE, nao a fisica.
+
+        Guarde a licao: ao comparar dois codigos de onda, verifique a convencao
+        de fonte antes de suspeitar da fisica. As perguntas certas sao: a
+        formulacao e de primeira ou de segunda ordem? A fonte entra na pressao,
+        na tensao ou na velocidade? Ha divisao por dh^2 (discretizacao da
+        delta)? Cada uma dessas escolhas muda a wavelet efetiva, e nenhuma
+        delas aparece no sismograma com uma etiqueta.
+    """)
+
     a.teoria("Historia real: como esta comparacao achou um bug", """
         Quando este curso foi montado, esta mesma comparacao falhou: os dois
         codigos discordavam em 159 ms, e o gather do PyFWI nao tinha apice --

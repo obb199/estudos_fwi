@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np                               # noqa: E402
 import fwikit                                    # noqa: E402
-from fwikit.aula import Aula, mostrar_figuras    # noqa: E402
+from fwikit.aula import Aula                     # noqa: E402
 from fwikit import plot                          # noqa: E402
 from fwikit.acustico import ricker, espectro_amplitude  # noqa: E402
 
@@ -41,6 +41,11 @@ def kjartansson_1d(w, dt, L, c0, Q, f_ref=None):
     Repare que dissipacao e dispersao vem JUNTAS: sao consequencia uma da
     outra, impostas pela causalidade (relacoes de Kramers-Kronig). Nao existe
     meio fisicamente admissivel que atenue sem dispersar.
+
+    NOTA DE PRECISAO: o fator de atenuacao acima usa 1/(2Q), que e a forma
+    valida para Q >> 1. A forma exata de Kjartansson tem tan(pi*gamma/2) no
+    lugar. A diferenca e de 0.25% em Q = 10 e de 0.06% em Q = 20 -- irrelevante
+    para a faixa sismica, mas vale saber que a expressao e uma aproximacao.
     """
     n = len(w)
     nfft = int(2 ** np.ceil(np.log2(n * 2)))
@@ -215,7 +220,7 @@ def main():
           f"(registro de {nt*dt:.3f} s)")
     print()
     print(f"    {'Q':<10}{'gamma':<12}{'amplitude rel.':<18}"
-          f"{'f pico (Hz)':<14}{'atraso (ms)'}")
+          f"{'f pico (Hz)':<14}{'atraso (ms)*'}")
     curvas = {}
     ref_amp = None
     for Q in [10000, 200, 100, 50, 20]:
@@ -232,11 +237,16 @@ def main():
         print(f"    {Q:<10}{gamma:<12.6f}{amp/ref_amp:<18.4f}"
               f"{f_pico:<14.1f}{atraso:+.1f}")
     print()
-    a.texto("""
-        Tres efeitos aparecem ao mesmo tempo, e nenhum deles existe na equacao
-        acustica: a amplitude cai, a frequencia de pico DESCE (as altas
-        frequencias sao atenuadas mais), e o pulso chega DEPOIS -- porque a
-        velocidade de fase efetiva mudou.
+    a.texto(f"""
+        Dois efeitos aparecem ao mesmo tempo, e nenhum deles existe na equacao
+        acustica: a amplitude cai, e a frequencia de pico DESCE -- as altas
+        frequencias sao atenuadas mais que as baixas.
+
+        (*) A coluna de atraso fica em torno de +-1 amostra ({dt*1000:.1f} ms) e
+        e RUIDO DE PICAGEM, nao sinal: escolhemos f_ref = f0, e por construcao
+        c(f0) = c0, entao a componente de pico viaja na velocidade nao
+        dispersiva. O efeito de dispersao no tempo de transito aparece de forma
+        limpa na proxima secao, onde ele e calculado e nao medido.
     """)
 
     import matplotlib.pyplot as plt
