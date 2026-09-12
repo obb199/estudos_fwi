@@ -1,0 +1,34 @@
+# ambiente virtual
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# auxiliares do LaTeX (o PDF final fica versionado)
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.toc
+docs/*.lof
+docs/*.lot
+docs/*.synctex.gz
+docs/*.fls
+docs/*.fdb_latexmk
+
+# dados grandes baixados pelo PyFWI (Marmousi etc.)
+dados/
+*.segy
+*.sgy
+*.tar.gz
+
+# sistema
+.DS_Store
+Thumbs.db
+
+# o PDF final fica na raiz; docs/ guarda so o fonte
+docs/curso_fwi.pdf

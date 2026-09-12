@@ -1,0 +1,29 @@
+# Curso de FWI com PyFWI -- dependencias
+#
+# Instalacao recomendada (ambiente isolado):
+#     python3 -m venv .venv
+#     .venv/bin/pip install -r requirements.txt
+#
+# O PyFWI 0.1.10 nao roda com numpy 2 / scipy >= 1.12 sem remendo.
+# O pacote fwikit aplica esse remendo automaticamente (fwikit/compat.py),
+# entao NAO e preciso rebaixar numpy nem scipy.
+
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.6
+
+# PyFWI e suas dependencias de dados
+PyFWI==0.1.10
+segyio>=1.9          # exigido por PyFWI.model_dataset
+h5py>=3.8
+hdf5storage>=0.1.19
+
+# OpenCL: obrigatorio para o nucleo do PyFWI (Modulos II e III).
+# As aulas do Modulo I e III que usam o propagador proprio (fwikit.acustico)
+# NAO precisam de OpenCL.
+#
+# Com GPU NVIDIA/AMD/Intel: o driver ja fornece o ICD; basta o pyopencl.
+# Sem GPU: instale tambem um runtime de CPU, por exemplo
+#     pip install pocl-binary-distribution
+#   ou, no Debian/Ubuntu:  sudo apt install pocl-opencl-icd
+pyopencl>=2023.1
