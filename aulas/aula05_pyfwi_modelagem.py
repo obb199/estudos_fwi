@@ -38,8 +38,8 @@ def main():
     except Exception as exc:
         a.aviso(f"""
             Nao consegui importar o PyFWI ({exc}).
-            Rode a aula 00 para diagnosticar. As aulas do Modulo I e III nao
-            dependem do PyFWI e continuam funcionando.
+            Rode a aula 00 para diagnosticar. As aulas 01-04, 07-09, 11, 13 e
+            14 nao dependem do PyFWI e continuam funcionando.
         """)
         return
 
@@ -79,11 +79,11 @@ def main():
 
         3. `inpa['acq_type']` escolhe o kernel: 0 = crosswell, 1 = superficie,
            2 = ambos. Os tres sao validos -- o perigo e usar um que nao casa
-           com a geometria montada.
-           Qualquer outro valor -- 0, por exemplo -- nao levanta erro: o codigo
+           com a geometria montada. Nesse caso nada levanta erro: o codigo
            simplesmente mapeia os receptores errado, e voce recebe um
            sismograma plausivel e ERRADO. Veja a secao de validacao cruzada no
-           fim desta aula: foi exatamente assim que esse problema apareceu.
+           fim desta aula: foi exatamente assim (acq_type = 0 com geometria de
+           superficie) que esse problema apareceu.
     """)
 
     # ==================================================================
@@ -433,9 +433,10 @@ def main():
     a.tabela(["nome", "o que e", "tamanho"],
              [["louboutin", "inclusao circular em meio homogeneo", "100 x 100"],
               ["yang", "tres inclusoes (vp, vs, rho separadas)", "100 x 100"],
-              ["hu_circles", "circulos concentricos", "100 x 100"],
-              ["perturbation_dv", "perturbacao suave de velocidade", "100 x 100"],
-              ["hu_laminar / dupuy", "camadas", "variavel"],
+              ["hu_circles", "tres circulos em porosidade, argila e saturacao", "100 x 100"],
+              ["perturbation_dv", "tres inclusoes (vp, vs, rho separadas)", "100 x 100"],
+              ["hu_laminar", "camadas em porosidade, argila e saturacao", "100 x 100"],
+              ["dupuy", "propriedades de rocha lidas de um .mat", "o .mat nao vem no pacote"],
               ["marmousi", "Marmousi-2 elastico (baixa da internet)", "grande"]])
     a.codigo("""
         M = md.ModelGenerator('louboutin')
@@ -455,9 +456,13 @@ def main():
     a.secao("Exercicios")
     a.exercicio(1, """
         Rode a mesma simulacao com components=2 (vx, vz) e compare com
-        components=0. Por que o sismograma de velocidade de particula parece a
-        derivada temporal do de pressao?
-    """, dica="olhe as equacoes de 1a ordem da aula 01.")
+        components=0. Longe da fonte, vz tem praticamente a MESMA forma de
+        onda que a pressao (a menos de escala e de sinal) -- e nao a sua
+        derivada. Por que? Onde essa relacao deixa de valer?
+    """, dica="numa onda plana p = f(t - x/c), rho dv/dt = -grad p da "
+              "v = p/(rho c): mesma forma, escala 1/impedancia. Ela muda no "
+              "campo proximo da fonte, e fora da incidencia normal vz ganha "
+              "o fator cos(theta).")
     a.exercicio(2, """
         Varie vs de 0 ate vp/sqrt(3) em cinco passos e meca, a cada passo,
         ||sxx - szz||/||sxx||. Faca o grafico. A transicao e suave ou abrupta?

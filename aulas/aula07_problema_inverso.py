@@ -313,9 +313,11 @@ def main():
          "Falta regularizacao"],
         1,
         "J parou de cair significa que o otimizador chegou a um minimo -- so que "
-        "local. Mais iteracoes nao ajudam. Gradiente errado normalmente impede J "
-        "de cair. O teste decisivo: refaca a inversao comecando por uma "
-        "frequencia mais baixa. Se o resultado mudar, era cycle skipping.")
+        "local. Mais iteracoes nao ajudam. Um gradiente errado tambem pode dar "
+        "esse sintoma (aula 09), mas ele se descarta com um teste barato e "
+        "independente do dado; com o gradiente verificado, a hipotese principal "
+        "e cycle skipping. O teste decisivo: refaca a inversao comecando por "
+        "uma frequencia mais baixa. Se o resultado mudar, era cycle skipping.")
 
     a.pausa()
 
@@ -331,8 +333,8 @@ def main():
     a.tabela(
         ["Fonte do modelo inicial", "Qualidade tipica", "Comentario"],
         [["Gradiente linear de vel.", "grosseira", "funciona em caso simples"],
-         ["Analise de velocidade (NMO)", "boa", "o padrao na industria"],
-         ["Tomografia de tempo de transito", "boa", "acerta a tendencia"],
+         ["Analise de velocidade (NMO)", "razoavel", "velocidade de empilhamento; exige conversao (Dix)"],
+         ["Tomografia de tempo de transito", "boa", "o padrao na industria; acerta a tendencia"],
          ["Modelo verdadeiro suavizado", "otima", "SO EXISTE em teste sintetico"],
          ["Migracao + interpretacao", "variavel", "depende do interprete"]])
     a.aviso("""

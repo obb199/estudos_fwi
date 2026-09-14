@@ -54,10 +54,13 @@ for ordem in (2, 4, 8):
 
 # ==========================================================================
 secao("2. Limite CFL (von Neumann analitico x implementado)")
+_theta = np.linspace(0.0, np.pi, 20001)
 for ordem in (2, 4, 8):
     c = COEF_D2[ordem]
-    # maximo do simbolo do laplaciano discreto, em k*dh = pi
-    S = abs(c[0] + 2 * sum(c[k] * (-1) ** k for k in range(1, len(c))))
+    # maximo do simbolo do laplaciano discreto, procurado NUMERICAMENTE em todo
+    # k*dh -- e nao so em k*dh = pi, que e o que a formula implementada assume
+    simb = -(c[0] + 2 * sum(c[k] * np.cos(k * _theta) for k in range(1, len(c))))
+    S = float(simb.max())
     lim = 2.0 / np.sqrt(2 * S)
     checa(f"O({ordem}) C_limite = 2/sqrt(ndim*S)",
           abs(lim - cfl_limite(ordem)) < 1e-12,
@@ -99,7 +102,7 @@ a = (np.pi * f0 * t) ** 2
 wv = (1 - 2 * a) * np.exp(-a)
 trunc = np.abs(wv[t + 1 / f0 < 0]).max() / np.abs(wv).max()
 checa("t0 = 1/f0 trunca menos de 0.1% da amplitude de pico",
-      trunc < 1.2e-3, f"{100*trunc:.4f}%")
+      trunc < 1.0e-3, f"{100*trunc:.4f}%")
 
 # ==========================================================================
 secao("5. Reducao acustica e relacoes elasticas")
@@ -203,6 +206,104 @@ x_crit = 2 * z1 * np.tan(np.arcsin(c1 / c2))
 checa("as duas grandezas sao mesmo diferentes",
       abs(x_cross - x_crit) > 1000.0,
       f"cruzamento {x_cross:.0f} m, critica {x_crit:.0f} m")
+
+# ==========================================================================
+secao("10. Dispersao numerica: medida no propagador x von Neumann")
+# Relacao de dispersao do esquema COMPLETO (leap-frog + estencil espacial),
+# para propagacao ao longo de um eixo da malha:
+#     (2/dt)^2 sin^2(w dt/2) = c^2 S(k dh) / dh^2
+# e do esquema SEMI-DISCRETO (tempo continuo):  w^2 = c^2 S(k dh) / dh^2.
+# A velocidade de fase do propagador e medida pela diferenca de fase entre
+# dois receptores alinhados com a fonte (campo distante: a fase 2D e kr - pi/4
+# nos dois, e o -pi/4 se cancela) e confrontada com as duas previsoes.
+from scipy.optimize import brentq                           # noqa: E402
+from scipy.signal import correlate                          # noqa: E402
+
+
+def _simbolo(ordem, th):
+    cc = COEF_D2[ordem]
+    return -(cc[0] + 2 * sum(cc[j] * np.cos(j * th) for j in range(1, len(cc))))
+
+
+def _c_rel(ordem, f, dh, c0, C=None):
+    """c_numerico / c pela relacao de dispersao; C=None -> semi-discreto."""
+    w_ = 2 * np.pi * f
+    if C is None:
+        alvo = (w_ * dh / c0) ** 2
+    else:
+        alvo = (4.0 / C ** 2) * np.sin(w_ * (C * dh / c0) / 2) ** 2
+    th = brentq(lambda t_: _simbolo(ordem, t_) - alvo, 1e-9, np.pi)
+    return w_ * dh / (th * c0)
+
+
+c0, dh = 2000.0, 10.0
+for ordem, G in [(4, 6), (8, 5)]:
+    C = 0.9 * cfl_limite(ordem)             # o dt que dt_maximo() escolhe
+    dt = C * dh / c0
+    cfg = Config(dh=dh, dt=dt, nt=int(0.95 / dt), ordem=ordem, n_abs=40, f0=25.0)
+    nzd, nxd, r1, r2 = 260, 300, 50, 100
+    sv = Acustico2D(cfg, (nzd, nxd))
+    gd = Geometria(fontes=np.array([[nzd // 2, 20]]),
+                   receptores=np.array([[nzd // 2, 20 + r1], [nzd // 2, 20 + r2]]))
+    d = sv.modelar(np.full((nzd, nxd), c0, np.float32), gd,
+                   ricker(25.0, dt, cfg.nt))[0].astype(np.float64)
+    nfft = 2 ** 16
+    freq = np.fft.rfftfreq(nfft, dt)
+
+    def _espectro(tr, t_chegada):
+        i0, n = int((t_chegada - 0.08) / dt), int(0.45 / dt)
+        X = np.fft.rfft(tr[i0:i0 + n] * np.hanning(n), nfft)
+        return X * np.exp(-2j * np.pi * freq * i0 * dt)   # fase relativa a t = 0
+
+    fase = np.unwrap(np.angle(_espectro(d[:, 0], 0.04 + r1 * dh / c0) *
+                              np.conj(_espectro(d[:, 1], 0.04 + r2 * dh / c0))))
+    i = int(np.argmin(np.abs(freq - c0 / (G * dh))))
+    medido = 2 * np.pi * freq[i] * (r2 - r1) * dh / fase[i] / c0
+    completo = _c_rel(ordem, freq[i], dh, c0, C)
+    semi = _c_rel(ordem, freq[i], dh, c0)
+    checa(f"O({ordem}), G={G}, C={C:.3f}: medido bate com o esquema completo",
+          abs(medido - completo) < 3e-3,
+          f"c/c0 medido {medido:.4f}, completo {completo:.4f}, "
+          f"semi-discreto {semi:.4f}")
+    if ordem == 8:
+        checa("O(8) perto do CFL: a curva so espacial NAO e conservadora",
+              abs(completo - 1) > 5 * abs(semi - 1),
+              f"erro real {100*abs(completo-1):.2f}% x previsto so pelo "
+              f"espaco {100*abs(semi-1):.2f}%")
+
+# ==========================================================================
+secao("11. Superficie livre: p = 0 exatamente em z = 0")
+# A superficie livre gera um GHOST: reflexao com polaridade invertida, que
+# equivale a uma fonte-imagem espelhada acima de z = 0. Com a fonte a 30
+# celulas de profundidade e o receptor a 70, a imagem fica a 100 celulas do
+# receptor -- SE a superficie estiver mesmo em z = 0. O atraso do ghost contra
+# a onda direta de um meio sem superficie a 100 celulas mede onde ela esta.
+for ordem in (4, 8):
+    dt = 0.3 * cfl_limite(ordem) * dh / c0
+    nt = int(0.9 / dt)
+    w = ricker(15.0, dt, nt)
+    cfg_l = Config(dh=dh, dt=dt, nt=nt, ordem=ordem, n_abs=40, f0=15.0,
+                   superficie_livre=True)
+    d_livre = Acustico2D(cfg_l, (260, 240)).modelar(
+        np.full((260, 240), c0, np.float32),
+        Geometria(fontes=np.array([[30, 120]]), receptores=np.array([[70, 120]])),
+        w)[0][:, 0].astype(np.float64)
+    cfg_i = Config(dh=dh, dt=dt, nt=nt, ordem=ordem, n_abs=40, f0=15.0)
+    d_inf = Acustico2D(cfg_i, (500, 240)).modelar(
+        np.full((500, 240), c0, np.float32),
+        Geometria(fontes=np.array([[230, 120]]),
+                  receptores=np.array([[270, 120], [330, 120]])),
+        w)[0].astype(np.float64)
+    ghost = -(d_livre - d_inf[:, 0])        # isola o ghost e desfaz a inversao
+    up = 20
+    t_ = np.arange(nt)
+    t_fino = np.arange(0, nt - 1, 1 / up)
+    xc = correlate(np.interp(t_fino, t_, ghost),
+                   np.interp(t_fino, t_, d_inf[:, 1]), mode="full", method="fft")
+    atraso = (np.argmax(xc) - (len(t_fino) - 1)) / up * dt
+    z_ef = -atraso * c0 / 2                  # posicao efetiva da superficie
+    checa(f"O({ordem}): superficie efetiva em z = 0 (tolerancia 0.1 dh)",
+          abs(z_ef) < 0.1 * dh, f"z efetivo = {z_ef:+.2f} m ({z_ef/dh:+.2f} dh)")
 
 # ==========================================================================
 print(f"\n{'='*72}")

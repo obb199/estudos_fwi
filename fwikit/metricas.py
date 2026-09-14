@@ -18,9 +18,12 @@ def erro_relativo_modelo(m_est: np.ndarray, m_true: np.ndarray) -> float:
 
         E = ||m_est - m_true||_2 / ||m_true||_2
 
-    Interpretacao: 0 = perfeito. Tipicamente 0.01-0.05 e uma FWI boa em
-    dado sintetico; acima de 0.10 algo esta errado (modelo inicial ruim,
-    cycle skipping, ou fisica incompativel entre dado e operador).
+    Interpretacao: 0 = perfeito. CUIDADO com o valor absoluto: ele e
+    normalizado pela norma do modelo INTEIRO, fundo incluido. Um modelo
+    inicial suave ja tem alguns por cento de erro (de 4.7% a 8% nos
+    experimentos deste curso), e uma anomalia pequena pesa pouco no total.
+    Um numero isolado nao diz se a FWI foi boa: compare sempre com o erro do
+    modelo inicial (veja `ganho`).
     """
     return float(np.linalg.norm(m_est - m_true) / np.linalg.norm(m_true))
 

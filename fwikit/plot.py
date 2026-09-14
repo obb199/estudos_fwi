@@ -106,7 +106,7 @@ def sismograma(ax, d: np.ndarray, dt: float, titulo: str = "",
     ext = [0, nr * (dx_rec or 1.0), nt * dt, 0]
     im = ax.imshow(d, cmap=cmap, aspect="auto", vmin=-lim, vmax=lim,
                    extent=ext, interpolation="bilinear")
-    ax.set_xlabel("offset (m)" if dx_rec else "receptor")
+    ax.set_xlabel("posicao ao longo do arranjo (m)" if dx_rec else "receptor")
     ax.set_ylabel("tempo (s)")
     if titulo:
         ax.set_title(titulo)

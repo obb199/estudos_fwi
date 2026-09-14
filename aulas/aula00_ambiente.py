@@ -143,18 +143,18 @@ def main():
         a.dica("""
             Sem GPU? Instale o POCL (`pip install pocl-binary-distribution` ou o
             pacote `pocl-opencl-icd` da sua distribuicao) para ter um dispositivo
-            OpenCL em CPU. Tudo no curso funciona -- so mais devagar. As aulas do
-            Modulo I e III usam o propagador proprio em NumPy, que nao precisa de
-            OpenCL nenhum.
+            OpenCL em CPU. Tudo no curso funciona -- so mais devagar. As aulas dos
+            Modulos I e V e as aulas 07-09, 11 e 13 usam o propagador proprio em
+            NumPy, que nao precisa de OpenCL nenhum.
         """)
     except Exception as exc:
         print()
         a.aviso(f"""
             OpenCL indisponivel ({exc}).
 
-            As aulas que usam o PyFWI (05, 06, 10, 12) nao vao rodar, mas todo o
-            Modulo I e III usam o propagador proprio em NumPy e funcionam
-            normalmente. Para habilitar: instale um ICD OpenCL (POCL para CPU,
+            As aulas que usam o PyFWI (05, 06, 10, 12) nao vao rodar, mas as
+            demais (01-04, 07-09, 11, 13 e 14) usam o propagador proprio em NumPy
+            e funcionam normalmente. Para habilitar: instale um ICD OpenCL (POCL para CPU,
             ou o driver da sua GPU).
         """)
 

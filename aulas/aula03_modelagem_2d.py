@@ -211,27 +211,37 @@ def main():
     print()
     print(f"    amplitude da onda direta (referencia) = {amp_direta:.3e}")
     print()
-    print(f"    {'n_abs':<8}{'espessura':<13}{'max|reflexao|':<18}{'em dB'}")
+    print(f"    {'n_abs':<8}{'espessura':<13}{'max|reflexao|':<18}"
+          f"{'vs direta':<12}{'vs espelho'}")
     curvas = []
+    db_espelho = None
     for n_abs in [0, 10, 20, 30, 45]:
         tr = traco(n_abs)
         refl = float(np.abs(tr[i_corte:] - referencia[i_corte:]).max())
         db = 20 * np.log10(refl / amp_direta + 1e-30)
+        if db_espelho is None:
+            db_espelho = db                    # n_abs = 0: reflexao de 100%
         print(f"    {n_abs:<8}{n_abs*dh2:>6.0f} m     "
-              f"{refl:<18.4e}{db:>7.1f} dB")
+              f"{refl:<18.4e}{db:>7.1f} dB   {db - db_espelho:>+6.1f} dB")
         curvas.append((n_abs, np.arange(nt2) * dt2, tr))
     print()
     a.texto("""
-        Leia o resultado com realismo. Com n_abs = 0 a borda e um espelho: a
-        reflexao chega a -7 dB da onda direta -- e ela so nao chega a 0 dB porque
-        percorreu 900 m a mais e sofreu espalhamento geometrico. Uma moldura de
-        Cerjan razoavel leva isso a -16/-18 dB, ou seja, a borda ainda devolve
-        uns 13% da amplitude. Isso e MEDIOCRE, e e exatamente por isso que
-        codigos de producao usam CPML, que chega a -40/-60 dB. O PyFWI e um
-        deles (`inpa['npml']`, `inpa['pmlR']`).
+        Leia o resultado com realismo -- e repare em relacao a QUE cada coluna
+        mede. Com n_abs = 0 a borda e um espelho, e mesmo assim o artefato fica
+        em -7 dB da onda direta: a direta foi medida a so 50 m da fonte, e a
+        reflexao percorreu ~850 m a mais e sofreu espalhamento geometrico (as
+        reflexoes do topo e do fundo ainda chegam juntas e se somam). Esse
+        -7 dB e, portanto, o valor de uma reflexao de 100%.
 
-        Note tambem que engrossar a moldura tem retorno decrescente: dobrar
-        n_abs de 20 para 45 ganha ~5 dB, nao 20. O taper otimo tambem depende de
+        Uma moldura de Cerjan razoavel leva o artefato a -16/-18 dB da direta,
+        ou seja, 10-12 dB abaixo do espelho: a borda ainda devolve de um quarto
+        a um terco do que um espelho devolveria. Isso e MEDIOCRE, e e
+        exatamente por isso que codigos de producao usam CPML, que fica 40 a
+        60 dB abaixo do seu proprio espelho (aula 06). O PyFWI e um deles
+        (`inpa['npml']`, `inpa['pmlR']`).
+
+        Note tambem que engrossar a moldura tem retorno decrescente: mais que
+        dobrar n_abs, de 20 para 45, ganha ~5 dB, nao 20. O taper otimo tambem depende de
         n_abs (forte demais reflete no proprio degrau de absorcao); o `fwikit`
         calibra isso sozinho com fator ~ 0.25/n_abs.
     """)

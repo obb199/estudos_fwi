@@ -240,9 +240,11 @@ def main():
         cycle skipping. O teste que realmente mede o valor da estrategia e
         degradar o inicial de proposito.
 
-        A tabela abaixo foi obtida rodando exatamente este fluxo (4 tiros,
-        12 iteracoes no total em ambos os casos) com quatro modelos iniciais
-        diferentes. Reproduzi-la e o Exercicio 12.2.
+        A tabela abaixo foi obtida com uma variante deste fluxo -- 4 tiros em
+        vez de 6, 12 iteracoes no total em ambos os casos -- e quatro modelos
+        iniciais diferentes. Os numeros nao coincidem com os da tabela
+        anterior: alem dos tiros, o inicial "linear suave" nao e identico ao de
+        cima (7.96% de erro, contra 8.00%). Reproduzi-la e o Exercicio 12.2.
     """)
     a.tabela(
         ["modelo inicial", "erro ini (%)", "mono 25 Hz", "multi 5/12/25",
@@ -251,7 +253,7 @@ def main():
          ["linear lento (viesado)", "16.68", "17.57", "17.34", "+0.24 pp"],
          ["constante", "16.32", "16.10", "16.06", "+0.04 pp"],
          ["suavizado forte", "4.95", "4.01", "3.70", "+0.31 pp"]])
-    a.teoria("Tres leituras, e a segunda e a mais importante", """
+    a.teoria("Quatro leituras, e a segunda e a mais importante", """
         PRIMEIRA: a multiescala venceu em TODOS os casos. A vantagem e
         consistente, ainda que modesta nesta escala de problema e com apenas
         12 iteracoes.
@@ -274,6 +276,16 @@ def main():
         (aula 07). Compare-o com "constante", que termina em 16%: a diferenca
         entre os dois nao esta no algoritmo, esta no que voce ja sabia antes
         de comecar.
+
+        QUARTA -- a que contraria a expectativa: a vantagem da multiescala NAO
+        cresceu quando o inicial piorou (+0.24 e +0.04 pp nos iniciais de ~16%,
+        contra +0.27 e +0.31 pp nos bons). A multiescala so resgata o que a
+        banda mais BAIXA alcanca. Pelo criterio da aula 07, |dc| < c^2/(2 f L):
+        com c ~ 2300 m/s e percursos de 1 a 2 km, a tolerancia a 5 Hz fica
+        entre ~11% e ~23%. Um erro de ~16% esta na borda desse vale, ou fora
+        dele, ja na primeira banda -- e ai nenhuma ordem de bandas salva. O
+        remedio seria comecar mais baixo (2-3 Hz), o que exige dado com
+        energia nessas frequencias.
     """)
 
     a.teoria("Como reportar uma FWI (e o que nao aceitar)", """

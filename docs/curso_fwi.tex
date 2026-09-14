@@ -163,15 +163,16 @@ Capítulo~\ref{cap:regularizacao} --- o texto discute o resultado obtido, não o
 \end{atencao}
 
 \begin{pratica}[As fórmulas são verificadas, não apenas citadas]
-O repositório traz \arq{testes/verificar\_fisica.py}, com 29 verificações que
+O repositório traz \arq{testes/verificar\_fisica.py}, com 34 verificações que
 confrontam cada fórmula usada aqui com sua derivação analítica ou com uma
 referência independente: os coeficientes de diferenças finitas contra os
 momentos de Taylor, o limite CFL contra a análise de von Neumann, a Ricker
 contra seu espectro analítico, as reduções elásticas, o gradiente adjunto
 contra diferenças finitas (teste de Taylor), os gradientes dos termos de
-regularização, e o modelo constant-$Q$.
+regularização, o modelo constant-$Q$, a dispersão numérica medida no próprio
+propagador e a posição da superfície livre.
 
-Elas rodam em poucos minutos:
+Elas rodam em poucos segundos:
 \begin{lstlisting}[language=bash]
 python testes/verificar_fisica.py
 \end{lstlisting}
@@ -462,8 +463,9 @@ a --20\,dB ($\approx 2{,}2 f_0$) ainda tem energia suficiente para
 \textbf{malha} --- arredondando para $2{,}5 f_0$ por segurança.
 
 \begin{equation}
-\lambda_{\min} = \frac{c_{\min}}{f_{\max}}, \qquad
-\text{resolução} \approx \frac{\lambda_{\min}}{2}.
+\lambda_{\min} = \frac{c_{\min}}{f_{\max}}\ \ (\text{malha: } f_{\max} = 2{,}5 f_0),
+\qquad
+\text{resolução} \approx \frac{\lambda}{2}\ \ (\text{com } f \approx 1{,}6 f_0).
 \end{equation}
 
 % =====================================================================
@@ -554,24 +556,39 @@ G = \frac{\lambda_{\min}}{\Delta h} = \frac{c_{\min}}{f_{\max}\,\Delta h},
 G \gtrsim \begin{cases} 15\text{--}20 & \text{O(2)}\\ 8\text{--}10 & \text{O(4)}\\ 4\text{--}5 & \text{O(8)}\end{cases}
 \end{equation}
 
-\begin{atencao}[Uma precisão sobre a curva de dispersão]
+\begin{atencao}[A curva espacial \emph{não} é conservadora]
 A curva mostrada é a do operador \textbf{espacial} isolado (esquema
 semi-discreto, tempo contínuo). A discretização \emph{temporal} acrescenta um
-erro próprio, e o detalhe interessante é que ele tem sinal \textbf{oposto}: o
-\emph{leap-frog} adianta a fase, o estêncil espacial atrasa, e os dois se
-cancelam parcialmente.
+erro próprio, de sinal \textbf{oposto}: o estêncil espacial atrasa a fase, o
+\emph{leap-frog} a adianta. Quanto um compensa o outro depende de $C$. Ao longo
+de um eixo da malha, o esquema completo obedece a
+\[
+\frac{4}{\Delta t^{2}}\sin^{2}\!\frac{\omega\Delta t}{2}
+ = \frac{c^{2}}{\Delta h^{2}}\,S(k\Delta h),
+\qquad
+S(\theta) = -\Bigl[c_0 + 2\sum_k c_k\cos(k\theta)\Bigr].
+\]
 
-Medido para O(4) com $G=6$: a curva semi-discreta dá $0{,}9939$, enquanto o
-esquema completo dá $0{,}9980$ ($C=0{,}3$) ou $1{,}0055$ ($C=0{,}5$). O erro
-real é \emph{menor} que o previsto pela curva espacial sozinha --- ela é uma
-estimativa conservadora, que é exatamente o que se quer para dimensionar malha.
+Para O(4) com $G=6$ a curva dá $0{,}9939$. O esquema completo dá $0{,}9980$
+com $C=0{,}3$ --- erro menor que o previsto ---, mas $1{,}0081$ com
+$C=0{,}551$, que é o $\Delta t$ de \arq{dt\_maximo}: aí o erro real ($0{,}8\%$)
+já \emph{supera} o da curva ($0{,}6\%$). Em O(8) o efeito é dramático: com
+$G=5$ e $C=0{,}5$ a curva promete $0{,}07\%$ e o esquema entrega $1{,}6\%$,
+porque o erro espacial quase sumiu e sobrou o temporal. A verificação 10 de
+\arq{verificar\_fisica.py} mede isso no propagador: velocidade de fase
+relativa $1{,}0146$, contra $1{,}0160$ da relação completa e $0{,}9993$ da
+curva espacial.
+
+Conclusão: perto do limite CFL, e sobretudo em O(8), quem dita a dispersão é
+o $\Delta t$. Em modelo heterogêneo isso pesa menos, porque $G$ é calculado com
+$c_{\min}$, onde o Courant local é só $C\,c_{\min}/c_{\max}$.
 \end{atencao}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{../saidas/aula02/01_dispersao_numerica.png}
 \caption{Esquerda: dispersão do operador \emph{espacial} por ordem (esquema
-semi-discreto). Direita: traço a 2{,}4\,km da fonte em meio homogêneo, com
+semi-discreto). Direita: traço a 2{,}3\,km da fonte em meio homogêneo, com
 $G=9{,}5$ e $G=2{,}4$. A cauda no traço vermelho não existe na física.}
 \end{figure}
 
@@ -580,7 +597,7 @@ $G=9{,}5$ e $G=2{,}4$. A cauda no traço vermelho não existe na física.}
 \begin{lstlisting}
 1. f_max  = 2.5 * f0                       # banda conservadora da Ricker
 2. dh     = c_min / (G * f_max)            # G = 8 (O4) ou 5 (O8)
-3. dt     = 0.9 * C_lim * dh / c_max       # margem de 10%
+3. dt     = 0.9 * C_lim * dh / c_max       # margem de 10% (O8: reduza C)
 4. nt     = tempo_de_registro / dt
 5. n_abs >= 0.5 * c_max / (f_min * dh)     # ver Capitulo 4
 \end{lstlisting}
@@ -645,7 +662,13 @@ $n_{abs}$ & reflexão & $n_{pml}$ & reflexão \\
 \end{tabular}
 \end{center}
 
-A comparação é eloquente: a CPML com 10 pontos já supera o Cerjan com 45.
+Os valores são relativos à onda direta de cada experimento, e as duas
+geometrias diferem ($\Delta h$, $f_0$, distância fonte--receptor). A linha
+$n=0$ é o espelho --- uma reflexão de 100\%, já atenuada pelo espalhamento
+geométrico ---, e a comparação honesta desconta esse valor: o Cerjan com 45
+pontos fica $11{,}5$\,dB abaixo do seu espelho ($-18{,}4+6{,}9$); a CPML com
+10 pontos fica $40{,}3$\,dB abaixo do dela ($-51{,}5+11{,}2$). A conclusão não
+muda, só fica precisa: a CPML com 10 pontos supera com folga o Cerjan com 45.
 É por isso que códigos de produção usam CPML.
 
 \begin{pratica}[Por que este curso usa Cerjan mesmo assim]
@@ -1429,9 +1452,13 @@ deste capítulo mostram $g_c$. Confira sempre o sinal contra uma perturbação
 conhecida: é o teste de sanidade mais barato.
 \item \textbf{Artefato perto de fontes e receptores.} O campo tem amplitude
 enorme ali, e a correlação explode. Não é informação: é geometria.
-\item \textbf{Os arcos (``banana'').} Um tiro produz uma faixa larga ligando
-fonte e receptor, não um ponto. É a zona de Fresnel: a onda é sensível a um
-\emph{volume}. Resolução finita é consequência direta disso.
+\item \textbf{Os arcos.} Um par fonte--receptor não aponta um ponto: espalha
+a sensibilidade por uma faixa. Para ondas \emph{transmitidas} a faixa liga
+fonte e receptor (a ``banana''); para ondas \emph{espalhadas} ou refletidas,
+como na figura, é um arco de elipse --- a isócrona --- com focos na fonte e no
+receptor, passando pelo espalhador. A espessura, nos dois casos, é a zona de
+Fresnel: a onda é sensível a um \emph{volume}. Resolução finita é consequência
+direta disso.
 \item \textbf{Iluminação decrescente com a profundidade.} Medida com o PyFWI
 neste curso: razão raso/profundo de \textbf{181$\times$}. Sem correção, a FWI
 só atualiza a parte rasa.
@@ -1448,11 +1475,12 @@ uma aproximação barata de $H^{-1}$.
 
 A diagonal de $H_{GN}$ é bem \textbf{aproximada} pela energia do campo direto
 em cada ponto --- a iluminação. A aproximação tem nome e referência: é o
-\emph{pseudo-Hessiano} de Shin \emph{et al.} (2001), obtido desprezando as
-contribuições cruzadas entre pontos do modelo.
+\emph{pseudo-Hessiano} de Shin \emph{et al.} (2001), que fica só com a
+diagonal (despreza o acoplamento entre pontos do modelo) e ainda despreza a
+propagação de cada ponto até os receptores.
 
 É uma aproximação, não uma identidade --- a diagonal exata de $J'^{T}J'$
-envolve também a função de Green até os receptores. Mas é boa o bastante, e
+envolve também essa função de Green até os receptores. Mas é boa o bastante, e
 barata o bastante, para ser o pré-condicionador padrão. Dividir o gradiente
 pela energia do campo, portanto, não é um truque cosmético: é uma aproximação
 diagonal justificada de $H^{-1}$. É o que o PyFWI faz em
@@ -1770,8 +1798,11 @@ direita contam histórias diferentes: por iteração e por custo.}
 \begin{atencao}[Compare por CUSTO, não por iteração]
 Por \emph{iteração}, o l-BFGS quase sempre vence, porque cada iteração usa
 curvatura acumulada. Por \emph{custo} --- número de modelagens, que é o que
-consome tempo de máquina --- a vantagem diminui, porque as iterações do
-l-BFGS gastam mais avaliações na busca linear.
+consome tempo de máquina --- a comparação pode mudar, porque o número de
+avaliações da busca linear varia de método para método. Neste experimento a
+conta ficou praticamente empatada (30, 28 e 28 avaliações), mas não conte com
+isso: um método que precise de mais tentativas por passo perde no eixo de
+custo o que ganhou no de iteração.
 
 Sempre que comparar otimizadores num relatório, mostre o eixo de custo.
 Comparar por iteração favorece artificialmente os métodos de iteração cara.
@@ -1840,10 +1871,11 @@ correlação 0{,}93 com o verdadeiro, ou seja, já está \emph{dentro} do vale d
 atração de 25\,Hz. Quando o monoescala não sofre cycle skipping, não há muito
 para o multiescala resgatar.
 
-A vantagem da multiescala cresce exatamente quando o modelo inicial piora ---
-e é por isso que o exercício de degradar o inicial de propósito é o que
-realmente mede o valor da estratégia. Um experimento que só mostra ganho
-quando o adversário já estava bem não demonstra grande coisa.
+A expectativa é que a vantagem cresça quando o modelo inicial piora ---
+\emph{desde que} a banda mais baixa ainda comece dentro do seu vale de
+atração. Por isso degradar o inicial de propósito é o que realmente mede o
+valor da estratégia, e a seção seguinte mostra que a expectativa nem sempre
+se confirma.
 \end{atencao}
 
 \begin{figure}[htbp]
@@ -1857,8 +1889,11 @@ erro e perfil vertical.}
 
 O experimento acima parte de um modelo inicial decente, e por isso a vantagem
 da multiescala fica modesta. O teste que mede o valor real da estratégia é
-degradar o inicial de propósito. Quatro modelos iniciais, mesmo fluxo, 12
-iterações no total em ambos os casos:
+degradar o inicial de propósito. Quatro modelos iniciais, com uma variante do
+mesmo fluxo --- 4 tiros em vez de 6, 12 iterações no total em ambos os casos.
+Os números não coincidem com os da tabela anterior: além dos tiros, o inicial
+``linear suave'' não é idêntico ao de cima ($7{,}96\%$ de erro, contra
+$8{,}00\%$).
 
 \begin{center}
 \begin{tabular}{@{}lrrrr@{}}
@@ -1873,7 +1908,7 @@ suavizado forte        & 4{,}95\%  & 4{,}01\%  & \textbf{3{,}70\%}  & $+0{,}31$ 
 \end{tabular}
 \end{center}
 
-\begin{teoria}[Três leituras, e a segunda é a mais importante]
+\begin{teoria}[Quatro leituras, e a segunda é a mais importante]
 \textbf{Primeira:} a multiescala venceu em \emph{todos} os casos. A vantagem é
 consistente, ainda que modesta nesta escala de problema.
 
@@ -1894,6 +1929,16 @@ ajudou.
 privilegiado que só existe em teste sintético. Compare com ``constante'', que
 termina em $16\%$: a diferença entre os dois não está no algoritmo, está no
 que já se sabia antes de começar.
+
+\textbf{Quarta --- a que contraria a expectativa:} a vantagem \emph{não}
+cresceu quando o inicial piorou ($+0{,}24$ e $+0{,}04$\,pp nos iniciais de
+$\sim$16\%, contra $+0{,}27$ e $+0{,}31$\,pp nos bons). A multiescala só
+resgata o que a banda mais \emph{baixa} alcança. Por \eqref{eq:tolerancia},
+com $c \approx 2300$\,m/s e percursos de 1 a 2\,km, a tolerância a 5\,Hz fica
+entre $\sim$11\% e $\sim$23\%. Um erro de $\sim$16\% está na borda desse vale,
+ou fora dele, já na primeira banda --- e aí nenhuma ordem de bandas salva. O
+remédio seria começar mais baixo (2--3\,Hz), o que exige dado com energia
+nessas frequências.
 \end{teoria}
 
 \section{Como reportar uma FWI}
@@ -1934,8 +1979,9 @@ J_{total}(\mathbf{m}) = J_{dados}(\mathbf{m}) + \lambda\,R(\mathbf{m})
 \end{equation}
 
 \begin{atencao}[Uma distinção que evita confusão]
-Regularização \textbf{não} melhora o ajuste dos dados. Ela sempre \emph{piora}
-$J_{dados}$, por construção. O que ela faz é escolher, entre os muitos modelos
+Regularização \textbf{não} melhora o ajuste dos dados: no ótimo, por
+construção, $J_{dados}$ só pode ficar igual ou \emph{pior} do que sem ela. O
+que ela faz é escolher, entre os muitos modelos
 que ajustam os dados igualmente bem, aquele mais plausível segundo um critério
 que \emph{você} definiu.
 

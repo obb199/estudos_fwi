@@ -55,9 +55,10 @@ def main():
          rotulo="funcional regularizado")
     a.aviso("""
         Uma distincao que evita muita confusao: regularizacao NAO melhora o
-        ajuste dos dados. Ela sempre PIORA J_dados, por construcao. O que ela
-        faz e escolher, entre os muitos modelos que ajustam os dados igualmente
-        bem, aquele que e mais plausivel segundo um criterio que VOCE definiu.
+        ajuste dos dados. No otimo, por construcao, J_dados so pode ficar igual
+        ou PIOR do que sem ela. O que ela faz e escolher, entre os muitos
+        modelos que ajustam os dados igualmente bem, aquele que e mais
+        plausivel segundo um criterio que VOCE definiu.
 
         Isso significa que a escolha de R e uma afirmacao sobre a geologia --
         e precisa ser justificada como tal, nao como conveniencia numerica.
@@ -409,10 +410,10 @@ def main():
         inpa['param_relation'] = {...}  # vinculo entre parametros
     """, titulo="chaves de regularizacao do inpa")
     a.texto("""
-        `az` e `ax` permitem anisotropia na regularizacao -- penalizar mais a
-        variacao vertical que a horizontal, por exemplo, o que faz sentido em
-        meio estratificado. E um recurso subutilizado e muito util: use
-        az < ax para favorecer camadas horizontais.
+        `az` e `ax` permitem anisotropia na regularizacao. Num meio estratificado
+        as camadas variam muito em z e pouco em x, entao faz sentido penalizar
+        MAIS a variacao horizontal que a vertical. E um recurso subutilizado e
+        muito util: use az < ax para favorecer camadas horizontais.
     """)
 
     a.pergunta(
@@ -424,7 +425,8 @@ def main():
          "Sim, regularizacao nunca deve piorar J_dados",
          "Nao, mas so acontece com TV"],
         1,
-        "Regularizacao SEMPRE piora J_dados: e o preco que ela cobra. Quando o "
+        "No otimo, regularizacao nunca melhora J_dados: e o preco que ela cobra. "
+        "Quando o "
         "modelo melhora mesmo assim, e porque o ajuste extra que se perdeu era "
         "ajuste ao ruido e a artefatos, nao a sinal. E exatamente para isso "
         "que a regularizacao existe.")
@@ -450,7 +452,8 @@ def main():
         "o que fazer onde os dados se calam.",
         "Tikhonov (L2) suaviza tudo; TV (L1) preserva interfaces. A escolha e uma "
         "afirmacao sobre a geologia.",
-        "Regularizacao SEMPRE piora J_dados. Se ela tambem piorar o MODELO, voce "
+        "Regularizacao nunca melhora J_dados (no otimo). Se ela tambem piorar o "
+        "MODELO, voce "
         "esta sobre-regularizando.",
         "Muito do que regulariza uma FWI e IMPLICITO: gradiente suavizado, inicial "
         "suave, multiescala, parada antecipada. Contabilize isso antes de somar mais.",

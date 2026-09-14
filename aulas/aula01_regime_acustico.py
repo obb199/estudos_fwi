@@ -163,7 +163,7 @@ def main():
          ["Reflexao (baixo angulo)", "OK", "coeficiente aproximadamente correto"],
          ["Reflexao (alto angulo)", "ERRA", "AVO precisa de vs"],
          ["Onda S", "AUSENTE", "nao existe no modelo"],
-         ["Conversao P-S", "AUSENTE", "principal contaminante em dado terrestre"],
+         ["Conversao P-S", "AUSENTE", "contaminante em dado terrestre"],
          ["Onda de superficie", "AUSENTE", "domina o dado terrestre raso"],
          ["Atenuacao (Q)", "AUSENTE", "amplitude e fase ficam erradas"],
          ["Anisotropia", "AUSENTE", "exige VTI/TTI"]])
@@ -255,8 +255,9 @@ def main():
             banda conservadora (-20 dB) ~ 2.2 f0   -> dimensione a MALHA com 2.5 f0
             comprimento de onda minimo  lambda_min = c_min / f_max
 
-        lambda_min e o que dita o espacamento da malha (aula 02) E o limite de
-        resolucao da FWI: nao se recupera estrutura menor que ~lambda/2.
+        Com f_max = 2.5 f0, lambda_min dita o espacamento da malha (aula 02).
+        Para a RESOLUCAO use a banda que carrega energia (~1.6 f0): a FWI nao
+        recupera estrutura menor que ~lambda/2 nessa frequencia.
     """)
 
     # ---- figura 1: Ricker no tempo e na frequencia --------------------
@@ -283,13 +284,13 @@ def main():
     c_vals = [1500, 2500, 4000]
     f0s = np.linspace(3, 45, 100)
     for c, cor in zip(c_vals, ["#1b6ca8", "#d1495b", "#2a9d8f"]):
-        lam = c / (2.5 * f0s)
-        ax[0].plot(f0s, lam, color=cor, lw=1.5, label=f"c = {c} m/s")
-        ax[1].plot(f0s, lam / 2, color=cor, lw=1.5, label=f"c = {c} m/s")
+        ax[0].plot(f0s, c / (2.5 * f0s), color=cor, lw=1.5, label=f"c = {c} m/s")
+        ax[1].plot(f0s, c / (1.6 * f0s) / 2, color=cor, lw=1.5,
+                   label=f"c = {c} m/s")
     ax[0].set_xlabel("f0 (Hz)"); ax[0].set_ylabel("lambda_min (m)")
-    ax[0].set_title("menor comprimento de onda (f_max = 2.5 f0)")
-    ax[1].set_xlabel("f0 (Hz)"); ax[1].set_ylabel("lambda_min / 2 (m)")
-    ax[1].set_title("limite de resolucao aproximado da FWI")
+    ax[0].set_title("lambda_min para a MALHA (f_max = 2.5 f0)")
+    ax[1].set_xlabel("f0 (Hz)"); ax[1].set_ylabel("lambda / 2 (m)")
+    ax[1].set_title("resolucao aproximada da FWI (f = 1.6 f0, -6 dB)")
     for e in ax:
         e.legend(fontsize=8); e.set_yscale("log")
     fig.tight_layout()
@@ -298,12 +299,14 @@ def main():
     a.pergunta(
         "Voce inverte com f0 = 8 Hz num meio de 2000 m/s. Qual a menor "
         "estrutura que pode esperar recuperar?",
-        ["cerca de 10 m", "cerca de 50 m", "cerca de 250 m", "cerca de 1000 m"],
+        ["cerca de 10 m", "cerca de 80 m", "cerca de 300 m", "cerca de 1000 m"],
         1,
-        "f_max ~ 2.5 * 8 = 20 Hz. lambda_min = 2000/20 = 100 m. O limite de "
-        "resolucao e ~lambda/2 = 50 m. Aumentar a frequencia melhora a "
-        "resolucao -- mas piora o cycle skipping (aula 07). Esse e o dilema "
-        "central da FWI e a razao da estrategia multiescala (aula 12).")
+        "A banda que move a inversao vai ate ~1.6 f0 (-6 dB): f ~ 13 Hz. "
+        "lambda = 2000/13 ~ 155 m, e o limite de resolucao e ~lambda/2 ~ 80 m. "
+        "(Usar o 2.5 f0 da malha daria 50 m -- otimista, porque ali a wavelet "
+        "ja tem pouca energia.) Aumentar a frequencia melhora a resolucao -- "
+        "mas piora o cycle skipping (aula 07). Esse e o dilema central da FWI "
+        "e a razao da estrategia multiescala (aula 12).")
 
     # ---- figura interativa -------------------------------------------
     if mostrar_figuras():
@@ -313,8 +316,8 @@ def main():
             t0. Observe tres coisas: (1) aumentar f0 estreita a wavelet no tempo
             e alarga o espectro; (2) t0 pequeno demais faz a wavelet ser cortada
             em t=0, o que introduz uma descontinuidade e suja o espectro;
-            (3) a banda util e sempre ~2.5 f0, independente de f0. Feche a janela
-            para continuar.
+            (3) a banda escala junto com f0: as razoes f_max/f0 (~1.6 a -6 dB,
+            ~2.2 a -20 dB) nao mudam. Feche a janela para continuar.
         """)
         from matplotlib.widgets import Slider
         figi, (axt, axf) = plt.subplots(1, 2, figsize=(11, 4))
@@ -368,7 +371,8 @@ def main():
         "porque a equacao e linear nesse parametro.",
         "O regime acustico preserva a CINEMATICA das ondas P e descarta cisalhamento, "
         "conversoes, ondas de superficie, AVO de alto angulo e atenuacao.",
-        "Ricker: pico em f0, banda util ate ~2.5 f0, resolucao ~lambda_min/2.",
+        "Ricker: pico em f0; -6 dB ate ~1.6 f0 (resolucao ~lambda/2); malha "
+        "dimensionada com f_max = 2.5 f0.",
     ], proxima="aula02_diferencas_finitas.py -- estabilidade e dispersao numerica")
 
 

@@ -15,7 +15,7 @@ from fwikit.aula import Aula, mostrar_figuras    # noqa: E402
 from fwikit import plot                          # noqa: E402
 from fwikit.acustico import (COEF_D2, Acustico2D, Config, Geometria,  # noqa: E402
                              cfl, cfl_limite, dt_maximo, ricker,
-                             pontos_por_comprimento_onda)
+                             largura_banda, pontos_por_comprimento_onda)
 
 
 def main():
@@ -211,14 +211,22 @@ def main():
     a.aviso("""
         Uma precisao sobre a curva da esquerda: ela e a dispersao do operador
         ESPACIAL isolado (esquema semi-discreto, tempo continuo). A
-        discretizacao TEMPORAL acrescenta um erro proprio, e o detalhe
-        interessante e que ele tem sinal OPOSTO -- o leap-frog adianta a fase,
-        o estencil espacial atrasa, e os dois se cancelam parcialmente.
+        discretizacao TEMPORAL acrescenta um erro proprio, de sinal OPOSTO: o
+        estencil espacial atrasa a fase, o leap-frog a adianta. Quanto um
+        compensa o outro depende do numero de Courant C.
 
-        Medido para O(4): com G = 6, a curva semi-discreta da 0.9939, enquanto
-        o esquema completo da 0.9980 (C = 0.3) ou 1.0055 (C = 0.5). Ou seja, o
-        erro real e MENOR que o previsto pela curva espacial sozinha -- ela e
-        uma estimativa conservadora, que e o que se quer para dimensionar malha.
+        Para O(4) com G = 6 a curva da 0.9939. O esquema completo da 0.9980 com
+        C = 0.3 -- erro menor que o previsto --, mas 1.0081 com C = 0.551, que e
+        o dt que `dt_maximo` escolhe: ai o erro real (0.8%) ja e MAIOR que o da
+        curva (0.6%). Em O(8) o efeito e dramatico: com G = 5 e C = 0.5 a curva
+        promete 0.07% e o esquema entrega 1.6%, porque o erro espacial quase
+        sumiu e sobrou o temporal.
+
+        Conclusao: a curva espacial NAO e uma estimativa conservadora. Perto do
+        limite CFL, e sobretudo em O(8), quem dita a dispersao e o dt. Em modelo
+        heterogeneo isso pesa menos: G e calculado com c_min, onde o Courant
+        local e so C * c_min/c_max. (A verificacao 10 de
+        testes/verificar_fisica.py mede isso no proprio propagador.)
     """)
 
     # demonstracao pratica: mesmo modelo, duas malhas
@@ -232,15 +240,23 @@ def main():
         f0 = 12.0
         fmax = 2.5 * f0
         Gv = pontos_por_comprimento_onda(c0, fmax, dh_teste)
-        nx = int(2400 / dh_teste)
-        nz = int(1200 / dh_teste)
+        # A janela (1.55 s) tem de conter a chegada (2.3 km / 2000 m/s + atraso
+        # da Ricker ~ 1.23 s) E a cauda que vem depois. E o dominio tem de ser
+        # grande o bastante para que NENHUMA reflexao de borda caia nessa
+        # janela: 1200 m acima e abaixo, 450 m atras da fonte, 850 m alem do
+        # receptor. Senao a "cauda" do traco limpo seria borda, nao fisica.
+        nx = int(3600 / dh_teste)
+        nz = int(2400 / dh_teste)
+        ix_fonte = int(450 / dh_teste)
+        ix_rec = ix_fonte + int(round(2300 / dh_teste))
+        distancia = (ix_rec - ix_fonte) * dh_teste
         cfg = Config(dh=dh_teste, dt=0.6 * dt_maximo(c0, dh_teste, 4),
-                     nt=int(0.9 / (0.6 * dt_maximo(c0, dh_teste, 4))),
+                     nt=int(1.55 / (0.6 * dt_maximo(c0, dh_teste, 4))),
                      ordem=4, n_abs=25, f0=f0)
         cm = np.full((nz, nx), c0, dtype=np.float32)
         s = Acustico2D(cfg, cm.shape)
-        geom = Geometria(fontes=np.array([[nz // 2, 4]]),
-                         receptores=np.array([[nz // 2, nx - 6]]))
+        geom = Geometria(fontes=np.array([[nz // 2, ix_fonte]]),
+                         receptores=np.array([[nz // 2, ix_rec]]))
         w = ricker(f0, cfg.dt, cfg.nt)
         d, _ = s.modelar(cm, geom, w)
         tr = d[:, 0] / (np.abs(d[:, 0]).max() + 1e-30)
@@ -251,7 +267,7 @@ def main():
               f"dt = {cfg.dt*1e3:.3f} ms   nt = {cfg.nt}")
     ax[1].set_xlabel("tempo (s)")
     ax[1].set_ylabel("amplitude normalizada")
-    ax[1].set_title("traco a 2.4 km da fonte, meio homogeneo")
+    ax[1].set_title(f"traco a {distancia/1000:.1f} km da fonte, meio homogeneo")
     ax[1].legend(fontsize=8)
     fig.tight_layout()
     plot.salvar(fig, a, "01_dispersao_numerica", mostrar=False)
@@ -271,14 +287,16 @@ def main():
     a.codigo("""
         1. f_max  = 2.5 * f0                      (banda conservadora da Ricker)
         2. dh     = c_min / (G * f_max)           G = 8 (O4) ou 5 (O8)
-        3. dt     = 0.9 * C_limite * dh / c_max   (margem de 10%)
+        3. dt     = 0.9 * C_limite * dh / c_max   (margem de 10%; em O8 com
+                                                    pouco contraste, reduza C)
         4. nt     = tempo_de_registro / dt
-        5. n_abs  >= 0.5 * lambda_max = 0.5 * c_max / f0   (aula 03)
+        5. n_abs  >= 0.5 * c_max / (f_min * dh)   (aula 03)
     """, titulo="dimensionamento de malha, na ordem certa")
     print()
     print("    Exemplo trabalhado: c entre 1500 e 4000 m/s, f0 = 10 Hz, O(4), 3 s")
     c_min, c_max, f0, ordem, T = 1500.0, 4000.0, 10.0, 4, 3.0
     f_max = 2.5 * f0
+    f_min = largura_banda(ricker(f0, 1e-3, 2000), 1e-3, -6.0)[0]
     G = 8.0
     dh = c_min / (G * f_max)
     dt = dt_maximo(c_max, dh, ordem)
@@ -289,7 +307,9 @@ def main():
     a.resultado("dh escolhido (G=8)", f"{dh:.2f}", "m")
     a.resultado("dt maximo (CFL, margem 10%)", f"{dt*1e3:.3f}", "ms")
     a.resultado("nt para 3 s", nt)
-    a.resultado("moldura absorvente sugerida", f"{int(0.5*c_max/f0/dh)}", "pontos")
+    a.resultado("f_min (borda inferior -6 dB da Ricker)", f"{f_min:.1f}", "Hz")
+    a.resultado("moldura absorvente sugerida",
+                f"{int(np.ceil(0.5 * c_max / (f_min * dh)))}", "pontos")
     print()
     a.aviso("""
         Repare no conflito embutido: dh e ditado por c_MIN (o menor comprimento
@@ -328,14 +348,16 @@ def main():
             dhv, ordv, f0v = estado["dh"], estado["ordem"], estado["f0"]
             c0 = 2000.0
             dtv = 0.6 * dt_maximo(c0, dhv, ordv)
-            ntv = int(0.9 / dtv)
-            nxv = max(30, int(2400 / dhv))
-            nzv = max(20, int(900 / dhv))
+            ntv = int(1.55 / dtv)
+            nxv = int(3600 / dhv)          # mesma geometria da figura estatica:
+            nzv = int(2400 / dhv)          # nenhuma reflexao de borda na janela
+            ixf = int(450 / dhv)
             cfgv = Config(dh=dhv, dt=dtv, nt=ntv, ordem=ordv, n_abs=20, f0=f0v)
             cmv = np.full((nzv, nxv), c0, dtype=np.float32)
             sv = Acustico2D(cfgv, cmv.shape)
-            gv = Geometria(fontes=np.array([[nzv // 2, 3]]),
-                           receptores=np.array([[nzv // 2, nxv - 5]]))
+            gv = Geometria(fontes=np.array([[nzv // 2, ixf]]),
+                           receptores=np.array([[nzv // 2,
+                                                 ixf + int(round(2300 / dhv))]]))
             wv = ricker(f0v, dtv, ntv)
             dv, _ = sv.modelar(cmv, gv, wv)
             tr = dv[:, 0] / (np.abs(dv[:, 0]).max() + 1e-30)
@@ -344,10 +366,10 @@ def main():
 
         t0v, tr0, G0 = simula()
         (linha,) = axi.plot(t0v, tr0, lw=1.4, color="#1b6ca8")
-        axi.set_xlim(0, 0.9); axi.set_ylim(-1.2, 1.2)
+        axi.set_xlim(0, 1.55); axi.set_ylim(-1.2, 1.2)
         axi.set_xlabel("tempo (s)"); axi.set_ylabel("amplitude normalizada")
         titulo = axi.set_title(f"G = {G0:.1f}")
-        s_dh = Slider(plt.axes([0.35, 0.18, 0.55, 0.03]), "dh (m)", 5.0, 40.0,
+        s_dh = Slider(plt.axes([0.35, 0.18, 0.55, 0.03]), "dh (m)", 8.0, 40.0,
                       valinit=12.0)
         s_f0 = Slider(plt.axes([0.35, 0.11, 0.55, 0.03]), "f0 (Hz)", 5.0, 25.0,
                       valinit=12.0)
@@ -390,7 +412,8 @@ def main():
         "CFL: C = c_max dt/dh <= C_limite. Acima disso o campo explode, sem meio-termo.",
         "Ordem espacial maior permite dh maior, mas aperta o dt.",
         "Dispersao numerica cria cauda oscilatoria que imita geologia. Controle com "
-        "G = lambda_min/dh (>=8 para O4, >=5 para O8).",
+        "G = lambda_min/dh (>=8 para O4, >=5 para O8) -- e, perto do CFL, com o "
+        "dt: em O8 o erro temporal pode dominar.",
         "dh vem de c_min; dt vem de c_max. Modelos com contraste alto pagam dos dois lados.",
         "Refinar dh pela metade custa 8x mais em 2D e 16x em 3D.",
     ], proxima="aula03_modelagem_2d.py -- campos de onda, snapshots e bordas absorventes")

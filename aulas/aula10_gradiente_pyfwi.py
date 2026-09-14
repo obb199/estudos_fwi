@@ -106,9 +106,18 @@ def main():
     print()
     a.texto("""
         O gradiente vem sempre com as tres componentes (vp, vs, rho), mesmo em
-        regime acustico. Repare que |g_vs| deu exatamente ZERO: como zeramos vs
-        no modelo, mu = 0 e o termo de cisalhamento desaparece identicamente do
-        adjunto -- consistente com a prova da aula 05.
+        regime acustico. Repare que |g_vs| deu exatamente ZERO -- mas NAO porque
+        o cisalhamento suma do adjunto. A sensibilidade a mu nao e nula: um
+        meio com mu pequeno ja geraria ondas S. O zero vem da regra da cadeia
+        da parametrizacao 'dv': mu = rho vs^2 e lambda = rho (vp^2 - 2 vs^2),
+        entao
+
+            g_vs = g_mu (2 rho vs) + g_lambda (-4 rho vs),
+
+        que se anula identicamente em vs = 0 -- e a conta que o PyFWI faz ao
+        converter de (lambda, mu, rho) para (vp, vs, rho). Consequencia
+        pratica: partindo de vs = 0, uma inversao em (vp, vs, rho) NUNCA
+        atualiza vs.
 
         Ja g_rho NAO e zero. Se voce invertesse as tres componentes juntas,
         estaria fazendo inversao multiparametro, com crosstalk entre vp e rho.
@@ -165,11 +174,12 @@ def main():
 
         A diagonal da Hessiana de Gauss-Newton e bem APROXIMADA pela energia
         do campo direto em cada ponto -- a iluminacao. Essa aproximacao tem
-        nome e referencia: e o pseudo-Hessiano de Shin et al. (2001), obtido
-        desprezando as contribuicoes cruzadas entre pontos do modelo.
+        nome e referencia: e o pseudo-Hessiano de Shin et al. (2001), que fica
+        so com a diagonal (despreza o acoplamento entre pontos do modelo) e
+        ainda despreza a propagacao de cada ponto ate os receptores.
 
         Note que e uma aproximacao, nao uma identidade: a diagonal exata de
-        J'^T J' envolve tambem a funcao de Green ate os receptores. Mas e boa o
+        J'^T J' envolve tambem essa funcao de Green ate os receptores. Mas e boa o
         bastante, e barata o bastante, para ser o pre-condicionador padrao.
         Dividir o gradiente pela energia do campo, portanto, nao e um truque
         cosmetico: e uma aproximacao diagonal justificada de H^(-1). E o que o
@@ -311,7 +321,8 @@ def main():
         "Gradiente bruto tem tres artefatos: singularidade de fonte/receptor, "
         "desequilibrio de iluminacao e alta frequencia.",
         "Pre-condicionar = aproximar H^(-1). A diagonal da Hessiana de Gauss-Newton "
-        "e a energia do campo -- por isso compensar iluminacao e legitimo.",
+        "e aproximada pela energia do campo (pseudo-Hessiano) -- por isso "
+        "compensar iluminacao e legitimo.",
         "Ordem de importancia: mascarar superficie > compensar iluminacao > "
         "suavizar > limitar em caixa.",
         "Pre-condicionamento nao conserta cycle skipping nem cria informacao onde "

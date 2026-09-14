@@ -27,6 +27,8 @@ Discretizacao:
               portanto auto-adjunto, o que preserva a validade do teste
               de gradiente. (O PyFWI usa CPML, mais eficiente e mais
               complexo de adjuntar.)
+  * topo    : opcionalmente superficie livre, p = 0 exatamente em z = 0
+              (metodo das imagens, ver `_laplaciano`)
 
 O PARAMETRO DE INVERSAO
 -----------------------
@@ -67,8 +69,9 @@ def ricker(f0: float, dt: float, nt: int, atraso: float | None = None) -> np.nda
         w(t) = (1 - 2 (pi f0 (t-t0))^2) exp(-(pi f0 (t-t0))^2)
 
     O atraso padrao t0 = 1/f0 garante que a wavelet comece praticamente
-    em zero (causalidade numerica). Frequencia de pico = f0;
-    frequencia maxima util ~ 2.5 f0 (ver aula 01).
+    em zero (causalidade numerica). Frequencia de pico = f0; banda ate
+    ~1.6 f0 a -6 dB e ~2.2 f0 a -20 dB -- dimensione a malha com 2.5 f0
+    (ver aula 01).
     """
     t0 = atraso if atraso is not None else 1.0 / f0
     t = np.arange(nt) * dt - t0
@@ -186,7 +189,13 @@ def cfl_limite(ordem: int = 4, ndim: int = 2) -> float:
 
 
 def pontos_por_comprimento_onda(c_min: float, f_max: float, dh: float) -> float:
-    """G = lambda_min / dh. Regra pratica: G >= 5 (O8) ou G >= 8..10 (O4)."""
+    """
+    G = lambda_min / dh. Regra pratica: G >= 5 (O8) ou G >= 8..10 (O4).
+
+    Essa regra controla so o erro ESPACIAL. O leap-frog acrescenta um erro
+    temporal de sinal oposto que, perto do limite CFL, pode ser MAIOR que o
+    espacial -- sobretudo em O(8). Ver aula 02.
+    """
     return c_min / (f_max * dh)
 
 
@@ -199,18 +208,36 @@ def dt_maximo(c_max: float, dh: float, ordem: int = 4, seguranca: float = 0.9) -
 # Nucleo: laplaciano e passo no tempo
 # --------------------------------------------------------------------------
 def _laplaciano(p: np.ndarray, dh: float, coef: np.ndarray,
-                saida: np.ndarray) -> np.ndarray:
-    """Laplaciano 2D por diferencas centradas. Escreve em `saida` (in-place)."""
+                saida: np.ndarray, espelho_topo: bool = False) -> np.ndarray:
+    """
+    Laplaciano 2D por diferencas centradas. Escreve em `saida` (in-place).
+
+    O estencil so cabe a N = ordem/2 pontos das bordas: nas N linhas e
+    colunas externas o laplaciano fica ZERO. Dentro da moldura absorvente
+    isso nao importa.
+
+    No topo com superficie livre importa: zerar as N primeiras linhas poria a
+    superficie efetiva em z = (N-1) dh, e nao em z = 0. Com
+    `espelho_topo=True` usamos o METODO DAS IMAGENS: acima de z = 0 o campo e
+    a imagem ANTISSIMETRICA, p(-z) = -p(z). Isso impoe p = 0 exatamente em
+    z = 0 com a mesma ordem do estencil, e o operador continua simetrico --
+    o adjunto continua sendo o proprio laco.
+    """
     N = len(coef) - 1
-    nz, nx = p.shape
     saida[:] = 0.0
+    z0 = 0
+    if espelho_topo:
+        # N linhas fantasmas acima de z = 0: p[-k] = -p[k], k = 1..N
+        p = np.concatenate([-p[N:0:-1], p], axis=0)
+        z0 = N
+    nz, nx = p.shape
     acc = 2.0 * coef[0] * p[N:nz - N, N:nx - N]
     for k in range(1, N + 1):
         acc = acc + coef[k] * (p[N + k:nz - N + k, N:nx - N] +
                                p[N - k:nz - N - k, N:nx - N] +
                                p[N:nz - N, N + k:nx - N + k] +
                                p[N:nz - N, N - k:nx - N - k])
-    saida[N:nz - N, N:nx - N] = acc / (dh * dh)
+    saida[N - z0:nz - N - z0, N:nx - N] = acc / (dh * dh)
     return saida
 
 
@@ -341,7 +368,7 @@ class Acustico2D:
         for it in range(cfg.nt):
             if grava_dado:
                 dados[it] = p_atu[rec_iz, rec_ix]
-            _laplaciano(p_atu, cfg.dh, self.coef, lap)
+            _laplaciano(p_atu, cfg.dh, self.coef, lap, cfg.superficie_livre)
             if it < len(sinais):
                 np.add.at(lap, (fz, fx), sinais[it] * esc)
             if guardar == "dtt":
@@ -415,10 +442,18 @@ class Acustico2D:
         o residuo invertido no tempo, e depois desinvertemos o campo.
 
         GUARDE ESTE PONTO PARA A DISSERTACAO: essa simetria vale porque nao ha
-        dissipacao. No operador viscoacustico de Kjartansson o adjunto do termo
-        atenuante e um termo que AMPLIFICA, e o campo adjunto deixa de ser uma
-        simples reversao temporal. E por isso que a Fase IV do seu projeto e
-        uma etapa propria.
+        dissipacao. Num operador viscoacustico (Kjartansson) ela se perde: o
+        adjunto de d/dt e -d/dt, e o de uma derivada fracionaria causal e a
+        derivada ANTI-causal correspondente. O operador deixa de ser
+        auto-adjunto, e o adjunto tem de ser derivado e implementado de
+        verdade, nao reaproveitado do laco direto.
+
+        Cuidado com uma confusao comum: resolvido de tras para frente, o campo
+        adjunto CONTINUA atenuando (e estavel). O que amplifica exponencialmente
+        e tentar RECONSTRUIR o campo DIRETO invertendo o tempo -- por isso, com
+        atenuacao, a reversao de campo deixa de servir e o checkpointing vira
+        obrigatorio (aula 06). E por isso que a Fase IV do seu projeto e uma
+        etapa propria.
 
         Retorna lambda(t, z, x) no dominio estendido, indexado no tempo direto.
         """

@@ -195,7 +195,8 @@ def main():
     fig.tight_layout()
     plot.salvar(fig, a, "01_comparacao_otimizadores", mostrar=False)
 
-    a.aviso("""
+    avaliacoes = " / ".join(str(r[4]) for r in resultados.values())
+    a.aviso(f"""
         Os dois ultimos paineis contam historias diferentes, e so o segundo
         interessa na pratica.
 
@@ -203,8 +204,11 @@ def main():
         informacao de curvatura acumulada.
 
         Por CUSTO -- numero de modelagens, que e o que consome o seu tempo de
-        maquina -- a vantagem diminui, porque as iteracoes do l-BFGS custam
-        mais avaliacoes na busca linear.
+        maquina -- a comparacao pode mudar, porque o numero de avaliacoes da
+        busca linear varia de metodo para metodo. Neste experimento foram
+        {avaliacoes} avaliacoes (na ordem da tabela). Um metodo que precise de
+        mais tentativas por passo perde no eixo de custo o que ganhou no de
+        iteracao.
 
         Sempre que comparar otimizadores (inclusive num relatorio ou
         dissertacao), mostre o eixo de CUSTO. Comparar por iteracao favorece

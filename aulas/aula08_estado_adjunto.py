@@ -204,7 +204,7 @@ def main():
         Esquecer isso e um dos erros mais dificeis de achar em FWI: o gradiente
         fica certo no miolo do modelo e erra perto das bordas e da superficie --
         justamente onde ficam fontes e receptores. Na montagem deste curso esse
-        detalhe valia 10% de erro na derivada direcional. A aula 09 mostra o
+        detalhe valia quase 9% de erro na derivada direcional. A aula 09 mostra o
         teste que o revelou.
     """)
 
@@ -285,10 +285,14 @@ def main():
            tratar, o primeiro passo da inversao vai gastar tudo mexendo na
            superficie.
 
-        3. O "ARCO" ou "BANANA". Um unico tiro produz uma faixa larga ligando
-           fonte e receptor, nao um ponto. E a zona de Fresnel: a onda e sensivel
-           a um volume, nao a um raio. Resolucao finita e consequencia direta
-           disso.
+        3. OS ARCOS. Um par fonte-receptor nao aponta um ponto: espalha a
+           sensibilidade por uma faixa. Para ondas TRANSMITIDAS (diretas,
+           mergulhantes) a faixa liga fonte e receptor -- a "banana". Para ondas
+           ESPALHADAS ou refletidas, como aqui, e um arco de elipse (a
+           isocrona) com focos na fonte e no receptor, passando pelo
+           espalhador. A espessura, nos dois casos, e a zona de Fresnel: a onda
+           e sensivel a um volume, nao a um raio. Resolucao finita e
+           consequencia direta disso.
 
         4. ILUMINACAO DECRESCENTE COM A PROFUNDIDADE. A amplitude cai com o
            espalhamento geometrico, entao o gradiente e sistematicamente mais
@@ -391,10 +395,13 @@ def main():
         problema adjunto sao FINAIS e nao iniciais.
     """, dica="os termos de fronteira em t=0 e t=T so se anulam com essa escolha.")
     a.exercicio(2, """
-        Calcule o gradiente para UM tiro e UM unico receptor. Voce deve ver um
-        arco (a 'banana') ligando fonte e receptor. Varie a posicao do receptor
-        e observe o arco se mover.
-    """, dica="passe uma geometria com receptores de tamanho 1.")
+        Calcule o gradiente para UM tiro e UM unico receptor. Como o residuo
+        aqui e a onda ESPALHADA pela inclusao, voce deve ver um arco de elipse
+        com focos na fonte e no receptor, passando pela anomalia (a isocrona).
+        Varie a posicao do receptor e observe o arco girar em torno da
+        anomalia. Em que geometria apareceria a 'banana' ligando os dois?
+    """, dica="passe uma geometria com um so receptor; a 'banana' aparece em "
+              "transmissao (crosswell, aula 04).")
     a.exercicio(3, """
         Compare o gradiente calculado com f0 = 5 Hz e com f0 = 20 Hz. Qual a
         largura tipica dos arcos em cada caso? Relacione com a zona de Fresnel,

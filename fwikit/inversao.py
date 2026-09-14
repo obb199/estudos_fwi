@@ -142,9 +142,11 @@ def passo_inicial_por_escala(m, d, J0=None, g=None,
        preferido em FWI, porque tem significado fisico: "nao mexa mais do
        que 2% na velocidade de uma vez".
 
-    2. MODELO QUADRATICO -- alpha = 2 J0 / |<g,d>|, o passo que zeraria J
-       se ele fosse linear. Serve de teto e de plano B quando o modelo
-       ainda e nulo (caso de testes analiticos).
+    2. MODELO QUADRATICO -- alpha = 2 J0 / |<g,d>|: o minimizador da
+       parabola q(a) = J0 + <g,d> a + c a^2 cujo minimo vale ZERO (dado
+       consistente, residuo anulavel ao longo de d). Um J linear se anularia
+       ja em J0/|<g,d>|; o fator 2 vem da curvatura. Serve de teto e de plano
+       B quando o modelo ainda e nulo (caso de testes analiticos).
     """
     esc_d = float(np.max(np.abs(d)))
     if esc_d <= 0 or not np.isfinite(esc_d):

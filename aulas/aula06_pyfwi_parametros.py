@@ -165,17 +165,26 @@ def main():
     amp_dir = float(np.abs(ref).max())
     i_corte = int(0.18 / dt)
     print()
-    print(f"    {'npml':<10}{'espessura':<14}{'max|reflexao|':<18}{'em dB'}")
+    print(f"    {'npml':<10}{'espessura':<14}{'max|reflexao|':<18}"
+          f"{'vs direta':<12}{'vs espelho'}")
+    db_espelho = None
     for npml in [0, 5, 10, 20, 30]:
         d, _ = modela(npml)
         n = min(len(d), len(ref))
         refl = float(np.abs(d[i_corte:n] - ref[i_corte:n]).max())
         db = 20 * np.log10(refl / amp_dir + 1e-30)
-        print(f"    {npml:<10}{npml*dh:>6.0f} m     {refl:<18.4e}{db:>7.1f} dB")
+        if db_espelho is None:
+            db_espelho = db                    # npml = 0: reflexao de 100%
+        print(f"    {npml:<10}{npml*dh:>6.0f} m     {refl:<18.4e}{db:>7.1f} dB"
+              f"   {db - db_espelho:>+6.1f} dB")
     print()
     a.texto("""
-        Compare com a tabela da aula 03: o Cerjan chegava a -18 dB com 45
-        pontos. A CPML faz melhor com muito menos. E por isso que ela e o padrao
+        Compare com a tabela da aula 03 -- mas compare certo. As duas geometrias
+        sao diferentes (dh, f0, distancia fonte-receptor), entao os dB relativos
+        a onda direta nao sao comparaveis entre si. O numero honesto e a coluna
+        'vs espelho', que desconta o espalhamento geometrico de cada experimento:
+        o Cerjan com 45 pontos fica ~11 dB abaixo do seu espelho; a CPML com 10
+        pontos, ~40 dB abaixo do dela. E por isso que ela e o padrao
         de producao, apesar de ser bem mais trabalhosa de implementar (e de
         adjuntar -- lembre que no nosso propagador escolhemos Cerjan justamente
         para manter o operador auto-adjunto).
@@ -202,7 +211,8 @@ def main():
         memoria, nao aritmetica. O ganho real de sdo=8 nao esta no tempo por
         passo: esta em poder usar dh maior (G ~ 5 em vez de ~8, aula 02), o que
         reduz o numero de pontos em 2D pelo quadrado da razao. E ai a economia e
-        grande.
+        grande -- desde que o dt acompanhe: em O(8) perto do limite CFL o erro
+        de dispersao temporal passa a dominar (aula 02).
     """)
 
     # ==================================================================

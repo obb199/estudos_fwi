@@ -128,8 +128,7 @@ def main():
     # ==================================================================
     a.secao("Lendo um shot gather")
     a.texto("""
-        Um shot gather tem uma anatomia reconhecivel. Do mais rapido ao mais
-        lento em offset longo:
+        Um shot gather tem uma anatomia reconhecivel. Os eventos, um a um:
     """)
     a.lista([
         "ONDA DIRETA -- reta com inclinacao 1/c da camada mais rasa. Passa pela "
@@ -303,9 +302,10 @@ def main():
           "so entre os pocos"]])
     a.texto("""
         Do ponto de vista da FWI, crosswell e o caso mais favoravel que existe:
-        as ondas atravessam o alvo em transmissao, com cobertura angular quase
-        completa. Superficie e o mais dificil, porque toda a informacao precisa
-        voltar para o topo. Quando um artigo mostra uma FWI espetacular, vale
+        as ondas atravessam o alvo em TRANSMISSAO, com cobertura angular ampla
+        entre os pocos -- embora sem raios verticais, o que degrada a resolucao
+        na direcao horizontal. Superficie e o mais dificil, porque toda a
+        informacao precisa voltar para o topo. Quando um artigo mostra uma FWI espetacular, vale
         sempre conferir qual geometria foi usada.
     """)
 
