@@ -196,7 +196,7 @@ complexidade e a completude, nunca o escopo.
 |---|---|---|---|
 | [`fwi_nivel1_introdutorio.pdf`](fwi_nivel1_introdutorio.pdf) | Introdutório | 59 | *O quê* e *por quê*. Ideias, figuras, analogias e conclusões. As fórmulas aparecem, mas são **lidas em palavras**, não derivadas. |
 | [`fwi_nivel2_intermediario.pdf`](fwi_nivel2_intermediario.pdf) | Intermediário | 67 | *Como se faz*. Todas as deduções, as versões discretas, os algoritmos, as contas de dimensionamento e exercícios resolvidos. |
-| [`fwi_nivel3_avancado.pdf`](fwi_nivel3_avancado.pdf) | Avançado | 65 | *Por que funciona e quando falha*. Espaços de funções, teoria de espalhamento, estrutura da Hessiana, multiparâmetro, funcionais alternativos e inferência. |
+| [`fwi_nivel3_avancado.pdf`](fwi_nivel3_avancado.pdf) | Avançado | 67 | *Por que funciona e quando falha*. Espaços de funções, teoria de espalhamento, estrutura da Hessiana, multiparâmetro, funcionais alternativos e inferência. |
 
 Os doze capítulos, idênticos nos três volumes:
 
@@ -222,6 +222,18 @@ transformada de Hilbert, espaços de Hilbert ou inferência bayesiana, uma caixa
 *Antes de usar* introduz a ferramenta, fixa a notação e destaca exatamente a
 propriedade que será explorada adiante — separando aprender a ferramenta de
 aprender a aplicação.
+
+**Os resultados foram conferidos contra a literatura primária.** Fórmulas,
+convenções e dados bibliográficos foram confrontados com as fontes originais —
+Kjartansson (1979) para constant-Q, Wu & Toksöz (1987) e Sirgue & Pratt (2004)
+para a cobertura de número de onda, Tarantola (1986) e Operto *et al.* (2013)
+para os padrões de radiação, Tromp *et al.* (2005) para as fontes adjuntas e os
+núcleos *banana-doughnut*, Warner & Guasch (2016) para a AWI, Komatitsch &
+Martin (2007) para a CPML, Métivier *et al.* (2013) para o Newton truncado e
+Schäfer *et al.* (2014) para a transformação 2,5D. As afirmações quantitativas
+próprias (limites CFL, banda da Ricker, dispersão do esquema completo, energia
+discreta do *leap-frog*, padrões de radiação, respostas dos exercícios) foram
+verificadas numericamente.
 
 Os três volumes compartilham o estilo `docs/fwiestilo.sty` e usam o mesmo
 conjunto de caixas: **a ideia** (a abertura de cada capítulo em uma frase),

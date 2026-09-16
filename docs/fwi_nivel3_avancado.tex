@@ -267,6 +267,9 @@ deixa o modelo errado mais suave.
 \section{Cobertura de n\'umero de onda: o que \'e recuper\'avel, e por qu\^e}
 \label{sec:cobertura}
 
+\noindent\emph{O resultado desta se\c{c}\~ao \'e o de Wu \& Toks\"oz (1987) em
+tomografia de difra\c{c}\~ao, retomado por Sirgue \& Pratt (2004) para FWI.}
+
 Esta se\c{c}\~ao \'e o resultado mais \'util do volume, e cabe em uma
 f\'igura. Ela responde, quantitativamente, \`a pergunta ``quais escalas do
 modelo o meu experimento pode enxergar?''.
@@ -302,6 +305,34 @@ raios que v\~ao do espalhador \`a fonte e ao receptor
 (2\omega/c)\cos(\vartheta/2)$ --- a forma que aparece na maior parte da
 literatura.
 \end{derivacao}
+
+\begin{armadilha}[Duas conven\c{c}\~oes de ``\^angulo de espalhamento'' na
+literatura]
+Este \'e o trope\c{c}o mais comum ao confrontar \eqref{eq:km} com artigos, e
+vale fix\'a-lo antes de usar a f\'ormula.
+
+Aqui, $\theta$ \'e o \^angulo entre as \emph{dire\c{c}\~oes de
+propaga\c{c}\~ao} incidente e espalhada --- a conven\c{c}\~ao da f\'isica de
+espalhamento. Com ela, $\theta = \pi$ \'e retroespalhamento (reflex\~ao em
+incid\^encia quase normal, afastamento curto) e $\theta = 0$ \'e transmiss\~ao.
+
+Boa parte da literatura de FWI chama de ``\^angulo de espalhamento'' (ou de
+difra\c{c}\~ao, ou de abertura) o \^angulo $\vartheta = \pi - \theta$ --- o
+\^angulo entre o campo direto e o campo \emph{adjunto} no ponto, ou
+equivalentemente entre os raios que v\~ao do espalhador \`a fonte e ao
+receptor. Nessa conven\c{c}\~ao, $\vartheta$ \emph{pequeno} \'e reflex\~ao e
+$\vartheta$ \emph{grande} \'e transmiss\~ao; as f\'ormulas aparecem com
+$\cos(\vartheta/2)$ no lugar de $\sin(\theta/2)$, e os fatores
+$(1-\cos\cdot)$ e $(1+\cos\cdot)$ trocam de lugar entre velocidade e
+imped\^ancia (§\ref{sec:radiacao}).
+
+Nenhuma das duas \'e errada, e as duas convivem na mesma literatura.
+\textbf{Como n\~ao errar:} n\~ao decore a f\'ormula --- decore o fato
+f\'isico. Reflex\~ao d\'a n\'umero de onda \emph{alto} e restringe
+\emph{imped\^ancia}; transmiss\~ao d\'a n\'umero de onda \emph{baixo} e
+restringe \emph{velocidade}. Depois confira qual conven\c{c}\~ao reproduz
+isso.
+\end{armadilha}
 
 \begin{teoria}[As tr\^es consequ\^encias de \eqref{eq:km}]
 \textbf{1. Transmiss\~ao constr\'oi o fundo; reflex\~ao constr\'oi as
@@ -573,7 +604,7 @@ uma faixa de \^angulos \emph{diferente}, e o \emph{crosstalk} cai.
 \label{sec:radiacao}
 
 \begin{derivacao}[Mon\'opolo e dip\'olo: de onde vem a separa\c{c}\~ao de
-\^angulos]
+\^angulos (cf.\ Tarantola, 1986; Operto \emph{et al.}, 2013)]
 Linearize \eqref{eq:ac2} em torno de um meio homog\^eneo de refer\^encia
 $(K_0,\rho_0)$, com perturba\c{c}\~oes $\delta\kappa$ (onde
 $\kappa = 1/K$) e $\delta\rho$. Na aproxima\c{c}\~ao de Born, o campo
@@ -994,7 +1025,8 @@ Isso n\~ao \'e detalhe acad\^emico: \'e exatamente a situa\c{c}\~ao das ondas
 mergulhantes de afastamento longo --- as que carregam a informa\c{c}\~ao de
 baixo n\'umero de onda (§\ref{sec:cobertura}) --- e das ondas de superf\'icie.
 
-\textbf{A CPML} (\emph{convolutional} PML) generaliza o estiramento para
+\textbf{A CPML} (\emph{convolutional} PML; Komatitsch \& Martin, 2007)
+generaliza o estiramento para
 \[
 s(x) = \kappa(x) + \frac{\sigma(x)}{\alpha(x) + \mathrm{i}\omega},
 \qquad \kappa \ge 1,\ \alpha > 0 .
@@ -1138,7 +1170,9 @@ pontual n\~ao. O caminho oposto (levar sint\'eticos 2D ao regime 3D) usa a
 \textbf{meia-derivada} $\sqrt{\mathrm{i}\omega}$. Trocar os dois inverte o
 sinal da rota\c{c}\~ao de fase --- $90^\circ$ de erro, sistem\'atico.
 
-A corre\c{c}\~ao \'e aproximada, e exata s\'o para meio homog\^eneo.
+A corre\c{c}\~ao \'e aproximada, e exata s\'o para meio homog\^eneo; ver
+Sch\"afer \emph{et al.} (2014) para a compara\c{c}\~ao entre as variantes e os
+res\'iduos que sobram.
 \end{atencao}
 
 \begin{resumo}
@@ -1273,14 +1307,35 @@ depois.
 
 \subsection*{Tempo de tr\^ansito por correla\c{c}\~ao cruzada}
 
-Seja $\tau^{*}$ o atraso que maximiza a correla\c{c}\~ao entre sint\'etico e
-observado numa janela, e $J = \tfrac12\sum (\tau^{*})^{2}$. A fonte adjunta
-(Luo \& Schuster; Tromp \emph{et al.}) \'e
+Seja $\Delta T$ o atraso que maximiza a correla\c{c}\~ao entre sint\'etico e
+observado numa janela, e $J = \tfrac12\sum (\Delta T)^{2}$. A fonte adjunta
+(Luo \& Schuster, 1991; Tromp \emph{et al.}, 2005, eqs.~42 e 45) \'e
 \begin{equation}
-f_{\text{adj}}^{\text{cc}} = \frac{\tau^{*}}{N}\,\partial_t d_{\text{cal}},
+f_{\text{adj}}^{\text{cc}}(t) = -\frac{\Delta T}{N}\,
+  \partial_t d_{\text{cal}}(T-t),
 \qquad
-N = \int d_{\text{cal}}\,\partial_{tt}d_{\text{cal}}\dd t .
+N = \int_0^T \bigl[\partial_t d_{\text{cal}}(t)\bigr]^{2}\dd t .
+\label{eq:adjcc}
 \end{equation}
+
+\begin{armadilha}[Duas formas da normaliza\c{c}\~ao, e tr\^es sinais para acertar]
+N\~ao \'e raro ver a normaliza\c{c}\~ao escrita como
+$N = \int d_{\text{cal}}\,\partial_{tt}d_{\text{cal}}\dd t$. Integrando por
+partes, com os termos de fronteira nulos,
+\[
+\int_0^T d\,\partial_{tt}d \dd t \;=\; -\int_0^T (\partial_t d)^{2}\dd t ,
+\]
+ou seja: as duas express\~oes s\~ao a mesma coisa \textbf{a menos de um
+sinal}. Some a isso a conven\c{c}\~ao adotada para $\Delta T$ (observado menos
+sint\'etico, ou o contr\'ario) e o sentido do tempo em que a fonte adjunta \'e
+injetada, e h\'a \emph{tr\^es} sinais independentes para acertar.
+
+Use a forma \eqref{eq:adjcc}, em que $N > 0$ por constru\c{c}\~ao, e
+\textbf{fixe o sinal com o teste do Cap\'itulo~\ref{cap:verificacao}}, nunca
+por inspe\c{c}\~ao. Um sinal trocado aqui produz uma invers\~ao que
+\emph{sobe} o funcional com total confian\c{c}a --- e, como o Volume 2
+insiste, isso n\~ao se parece com erro.
+\end{armadilha}
 
 \textbf{Pre\c{c}o.} Exige \emph{janelamento} --- \'e preciso identificar
 \emph{qual} evento se est\'a comparando. Isso reintroduz interpreta\c{c}\~ao
@@ -1295,7 +1350,8 @@ $u = \argmin_u \norm{u * d_{\text{cal}} - d_{\text{obs}}}^{2}$, e penalize o
 \emph{espalhamento} desse filtro:
 \begin{equation}
 J_{\text{AWI}} = \frac{\norm{T u}^{2}}{\norm{u}^{2}},
-\qquad T = \operatorname{diag}(t) .
+\qquad T = \operatorname{diag}(t)
+\qquad\text{(Warner \& Guasch, 2016)} .
 \end{equation}
 
 A ideia \'e elegante: se o modelo estiver certo, $u$ \'e uma delta em
@@ -1613,7 +1669,8 @@ $\sim\sqrt{\lambda L}$ --- a \textbf{zona de Fresnel}.
 \textbf{O ``buraco'' no meio da banana.} Para um desajuste de tempo de
 tr\^ansito puro (correla\c{c}\~ao cruzada), a sensibilidade \emph{anula-se
 sobre o pr\'oprio raio} e \'e m\'axima num anel ao redor --- o n\'ucleo
-\emph{banana-doughnut}. N\~ao \'e curiosidade: contradiz frontalmente a
+\emph{banana-doughnut} (Marquering \emph{et al.}, 1999; Tromp \emph{et al.},
+2005). N\~ao \'e curiosidade: contradiz frontalmente a
 intui\c{c}\~ao da teoria de raios, segundo a qual a sensibilidade estaria
 concentrada no raio. A resolu\c{c}\~ao finita da FWI \'e consequ\^encia
 direta desta estrutura --- a onda \'e sens\'ivel a um \emph{volume}.
@@ -3173,6 +3230,10 @@ computational differentiation.} ACM TOMS, v.~26, n.~1, p.~19--45, 2000.
 \item KJARTANSSON, E. \emph{Constant-Q wave propagation and attenuation.}
 JGR, v.~84, p.~4737--4748, 1979.
 
+\item GRIEWANK, A.; WALTHER, A. \emph{Evaluating Derivatives: Principles and
+Techniques of Algorithmic Differentiation.} 2.~ed. SIAM, 2008. --- o
+tratamento completo do resultado de \emph{checkpointing} \'otimo.
+
 \item KOMATITSCH, D.; MARTIN, R. \emph{An unsplit convolutional perfectly
 matched layer improved at grazing incidence for the seismic wave equation.}
 Geophysics, v.~72, n.~5, p.~SM155--SM167, 2007.
@@ -3188,6 +3249,10 @@ on Scientific Computing, v.~35, n.~2, p.~B401--B437, 2013.
 seismograms using an optimal transport distance.} Geophysical Journal
 International, v.~205, n.~1, p.~345--377, 2016.
 
+\item MARQUERING, H.; DAHLEN, F.~A.; NOLET, G. \emph{Three-dimensional
+sensitivity kernels for finite-frequency traveltimes: the banana-doughnut
+paradox.} Geophysical Journal International, v.~137, n.~3, p.~805--815, 1999.
+
 \item NOCEDAL, J.; WRIGHT, S.~J. \emph{Numerical Optimization.} 2.~ed.
 Springer, 2006.
 
@@ -3201,6 +3266,11 @@ n.~2, p.~495--503, 2006.
 
 \item PRATT, R.~G. \emph{Seismic waveform inversion in the frequency domain,
 Part 1.} Geophysics, v.~64, n.~3, p.~888--901, 1999.
+
+\item SCH\"AFER, M.; GROOS, L.; FORBRIGER, T.; BOHLEN, T. \emph{Line-source
+simulation for shallow-seismic data. Part 2: full-waveform inversion --- a
+synthetic 2-D case study.} Geophysical Journal International, v.~198, n.~3,
+p.~1405--1418, 2014.
 
 \item SHIN, C.; JANG, S.; MIN, D.-J. \emph{Improved amplitude preservation for
 prestack depth migration by inverse scattering theory.} Geophysical
@@ -3238,6 +3308,10 @@ Inversion.} SEG, 2017.
 
 \item WARNER, M.; GUASCH, L. \emph{Adaptive waveform inversion: theory.}
 Geophysics, v.~81, n.~6, p.~R429--R445, 2016.
+
+\item WU, R.-S.; TOKS\"OZ, M.~N. \emph{Diffraction tomography and multisource
+holography applied to seismic imaging.} Geophysics, v.~52, n.~1, p.~11--25,
+1987.
 \end{enumerate}
 
 \vfill
