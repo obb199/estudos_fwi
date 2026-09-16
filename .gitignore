@@ -30,5 +30,5 @@ dados/
 .DS_Store
 Thumbs.db
 
-# o PDF final fica na raiz; docs/ guarda so o fonte
-docs/curso_fwi.pdf
+# os PDFs finais ficam na raiz; docs/ guarda so os fontes
+docs/*.pdf

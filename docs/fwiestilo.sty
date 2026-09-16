@@ -1,0 +1,202 @@
+% =====================================================================
+%  fwiestilo.sty -- estilo comum aos tres volumes do curso de FWI
+%  Uso:  \usepackage{fwiestilo}
+%  Antes de \begin{document} defina:
+%     \renewcommand{\nivelnum}{1|2|3}
+%     \renewcommand{\nivelnome}{Introdutorio|Intermediario|Avancado}
+% =====================================================================
+\ProvidesPackage{fwiestilo}[2026/09/15 Estilo do curso de FWI em tres niveis]
+
+\RequirePackage{fontspec}
+\RequirePackage[brazil]{babel}
+\RequirePackage{amsmath,amssymb,amsfonts,mathtools}
+\RequirePackage[a4paper,margin=2.4cm,headheight=14pt]{geometry}
+\RequirePackage{graphicx}
+\RequirePackage{xcolor}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{listings}
+\RequirePackage{booktabs}
+\RequirePackage{longtable}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{fancyhdr}
+\RequirePackage{titlesec}
+\RequirePackage{tikz}
+\RequirePackage{pgfplots}
+\RequirePackage[hidelinks]{hyperref}
+\RequirePackage{microtype}
+
+\pgfplotsset{compat=1.17}
+\usetikzlibrary{arrows.meta,positioning,calc,decorations.pathmorphing,
+                decorations.markings,patterns,backgrounds,fit,shapes.geometric,
+                shapes.misc}
+
+% ---------------------------------------------------------------- cores
+\definecolor{azulfwi}{HTML}{1B4F72}
+\definecolor{cianofwi}{HTML}{1B6CA8}
+\definecolor{verdefwi}{HTML}{1E7A5A}
+\definecolor{vermelhofwi}{HTML}{A93226}
+\definecolor{roxofwi}{HTML}{6C3483}
+\definecolor{cinzafwi}{HTML}{F4F6F7}
+\definecolor{amarelofwi}{HTML}{9A7D0A}
+\definecolor{laranjafwi}{HTML}{B9770E}
+\definecolor{prepfwi}{HTML}{3D5A73}
+
+% ---------------------------------------------------------------- nivel
+\newcommand{\nivelnum}{1}
+\newcommand{\nivelnome}{Introdutorio}
+
+% ---------------------------------------------------------------- estilo
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{azulfwi}{\leftmark}}
+\fancyhead[R]{\small\textcolor{cianofwi}{N\'ivel \nivelnum}\;$\cdot$\;\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{azulfwi}}
+  {\Large\textcolor{cianofwi}{Cap\'itulo \thechapter}}{8pt}{\Huge}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{azulfwi}}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{cianofwi}}{\thesubsection}{1em}{}
+
+\emergencystretch=1.6em
+\hbadness=4000
+
+\setlength{\parskip}{0.55em}
+\setlength{\parindent}{0pt}
+
+% ---------------------------------------------------------------- caixas
+\newtcolorbox{teoria}[1][]{
+  enhanced, breakable, colback=roxofwi!4, colframe=roxofwi,
+  coltitle=white, fonttitle=\bfseries, title={#1},
+  boxrule=0.8pt, arc=2pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+\newtcolorbox{pratica}[1][]{
+  enhanced, breakable, colback=verdefwi!4, colframe=verdefwi,
+  coltitle=white, fonttitle=\bfseries, title={#1},
+  boxrule=0.8pt, arc=2pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+\newtcolorbox{atencao}[1][]{
+  enhanced, breakable, colback=amarelofwi!8, colframe=amarelofwi,
+  coltitle=white, fonttitle=\bfseries, title={#1},
+  boxrule=0.8pt, arc=2pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+\newtcolorbox{armadilha}[1][]{
+  enhanced, breakable, colback=vermelhofwi!5, colframe=vermelhofwi,
+  coltitle=white, fonttitle=\bfseries, title={#1},
+  boxrule=0.8pt, arc=2pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+\newtcolorbox{analogia}[1][]{
+  enhanced, breakable, colback=cianofwi!5, colframe=cianofwi,
+  coltitle=white, fonttitle=\bfseries, title={#1},
+  boxrule=0.8pt, arc=2pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+\newtcolorbox{derivacao}[1][]{
+  enhanced, breakable, colback=azulfwi!3, colframe=azulfwi,
+  coltitle=white, fonttitle=\bfseries, title={#1},
+  boxrule=0.8pt, arc=2pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+% resumo de fim de capitulo
+\newtcolorbox{resumo}[1][O que fica deste cap\'itulo]{
+  enhanced, breakable, colback=cinzafwi, colframe=azulfwi!70,
+  coltitle=white, fonttitle=\bfseries, title={#1},
+  boxrule=1.1pt, arc=2pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+% abertura de capitulo: a ideia em uma frase
+\newtcolorbox{ideia}[1][A ideia deste cap\'itulo, em uma frase]{
+  enhanced, breakable, colback=white, colframe=cianofwi,
+  coltitle=white, fonttitle=\bfseries, title={#1},
+  boxrule=1.1pt, arc=2pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+% primer matematico: apresenta a ferramenta ANTES de aplica-la ao FWI
+\newtcolorbox{matematica}[1][]{
+  enhanced, breakable, colback=prepfwi!4, colframe=prepfwi,
+  coltitle=white, fonttitle=\bfseries,
+  title={\hspace{-2pt}Antes de usar: #1},
+  boxrule=0.9pt, arc=0pt, outer arc=0pt,
+  leftrule=4.5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  attach boxed title to top left={xshift=6pt, yshift=-2pt},
+  boxed title style={colback=prepfwi, arc=1pt, boxrule=0pt},
+  before upper={\setlength{\parskip}{0.5em}\setlength{\parindent}{0pt}}}
+
+\newtcolorbox{exercicio}[1][Exerc\'icios]{
+  enhanced, breakable, colback=laranjafwi!5, colframe=laranjafwi,
+  coltitle=white, fonttitle=\bfseries, title={#1},
+  boxrule=0.8pt, arc=2pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+% ---------------------------------------------------------------- codigo
+\lstdefinestyle{py}{
+  language=Python, basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{azulfwi}\bfseries, commentstyle=\color{verdefwi}\itshape,
+  stringstyle=\color{vermelhofwi}, numbers=left, numberstyle=\tiny\color{gray},
+  backgroundcolor=\color{cinzafwi}, frame=single, framerule=0.4pt,
+  rulecolor=\color{gray!40}, breaklines=true, showstringspaces=false,
+  xleftmargin=14pt, framexleftmargin=14pt, literate=
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {ã}{{\~a}}1 {õ}{{\~o}}1 {ç}{{\c c}}1 {â}{{\^a}}1 {ê}{{\^e}}1}
+\lstset{style=py}
+
+% ---------------------------------------------------------------- macros
+\newcommand{\arq}[1]{\texttt{\small #1}}
+\newcommand{\aula}[1]{\textcolor{cianofwi}{\textbf{[aula #1]}}}
+
+% ponteiro entre niveis
+\newcommand{\ponte}[2]{%
+  \par\vspace{2pt}%
+  {\small\textcolor{cianofwi}{$\blacktriangleright$}\;\textit{#1}\;---\;#2\par}%
+  \vspace{2pt}}
+
+% simbolos recorrentes
+\newcommand{\mvec}{\mathbf{m}}
+\newcommand{\dobs}{\mathbf{d}_{\mathrm{obs}}}
+\newcommand{\dcal}{\mathbf{d}_{\mathrm{cal}}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\inner}[2]{\langle #1,\,#2\rangle}
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\abs}[1]{\lvert #1 \rvert}
+\newcommand{\dd}{\,\mathrm{d}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% ---------------------------------------------------------------- capa
+\newcommand{\capafwi}[3]{%
+% #1 = subtitulo do nivel  #2 = epigrafe  #3 = linha de rodape
+\begin{titlepage}
+\centering
+\vspace*{1.6cm}
+{\color{cianofwi}\rule{\textwidth}{2.2pt}}\\[0.45cm]
+{\Huge\bfseries\color{azulfwi} Full-Waveform Inversion}\\[0.35cm]
+{\LARGE\color{azulfwi} A teoria completa, em tr\^es n\'iveis}\\[0.35cm]
+{\color{cianofwi}\rule{\textwidth}{2.2pt}}\\[1.1cm]
+
+{\Large\bfseries\color{roxofwi} Volume \nivelnum\ \textemdash\ \nivelnome}\\[0.5cm]
+{\large #1}\\[1.6cm]
+
+\begin{tikzpicture}[scale=1.0]
+  \foreach \i/\c in {1/cianofwi, 2/roxofwi, 3/azulfwi} {
+     \pgfmathsetmacro{\alt}{0.55*\i}
+     \ifnum\i=\nivelnum
+        \node[draw=\c, fill=\c!18, line width=1.3pt, rounded corners=3pt,
+              minimum width=3.3cm, minimum height=1.05cm] at (4.0*\i-4,0)
+              {\bfseries\color{\c} N\'ivel \i};
+     \else
+        \node[draw=gray!50, fill=gray!5, line width=0.7pt, rounded corners=3pt,
+              minimum width=3.3cm, minimum height=1.05cm] at (4.0*\i-4,0)
+              {\color{gray} N\'ivel \i};
+     \fi
+  }
+  \draw[gray!50, line width=0.7pt] (1.7,0) -- (2.3,0);
+  \draw[gray!50, line width=0.7pt] (5.7,0) -- (6.3,0);
+\end{tikzpicture}\\[1.5cm]
+
+\begin{minipage}{0.82\textwidth}
+\centering\itshape\large #2
+\end{minipage}
+
+\vfill
+{\large #3}\\[0.6cm]
+{\large\bfseries \today}
+\end{titlepage}}
+
+\endinput

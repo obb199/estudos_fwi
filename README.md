@@ -11,12 +11,15 @@ O repositório reúne três coisas que se complementam:
 - **15 aulas executáveis em Python**, conduzidas no terminal, com teoria,
   experimentos numéricos, figuras, quizzes e exercícios;
 - **um PDF teórico de 61 páginas** ([`curso_fwi_completo.pdf`](curso_fwi_completo.pdf)),
-  com as derivações e os resultados das aulas;
+  que acompanha as aulas capítulo a capítulo;
+- **a teoria completa em três níveis de profundidade**, três volumes
+  independentes com os mesmos doze capítulos — do introdutório qualitativo ao
+  avançado ([veja abaixo](#a-coleção-em-três-níveis));
 - **a caixa de ferramentas `fwikit`**, com um propagador acústico 2D escrito do
   zero em NumPy, o gradiente pelo método do estado adjunto, otimizadores,
   regularização e testes de gradiente.
 
-Todos os números, tabelas e figuras do PDF são produzidos pelo código deste
+Todos os números, tabelas e figuras dos PDFs são produzidos pelo código deste
 repositório, e uma bateria de 34 verificações confronta as fórmulas do curso
 com suas derivações analíticas e com medidas feitas no próprio propagador.
 
@@ -29,6 +32,7 @@ com suas derivações analíticas e com medidas feitas no próprio propagador.
 - [Como uma aula funciona](#como-uma-aula-funciona)
 - [Mapa do curso](#mapa-do-curso)
 - [O PDF teórico](#o-pdf-teórico)
+- [A coleção em três níveis](#a-coleção-em-três-níveis)
 - [As duas ferramentas](#as-duas-ferramentas)
 - [`fwikit` por dentro](#fwikit-por-dentro)
 - [Verificação numérica](#verificação-numérica)
@@ -177,6 +181,52 @@ fazer), **atenção** (o detalhe que muda o resultado) e **armadilha** (o erro q
 custa tempo). O apêndice A organiza os sintomas mais comuns de uma FWI que dá
 errado (J não cai, J cai mas o modelo está errado, só a parte rasa é atualizada,
 o campo estoura, cauda oscilatória) com as causas a investigar em cada caso.
+
+---
+
+## A coleção em três níveis
+
+Além do PDF que acompanha as aulas, o repositório traz **a mesma teoria escrita
+três vezes**, em profundidade crescente. Não são um resumo e dois
+aprofundamentos: são três passagens completas pelo assunto, com **os mesmos
+doze capítulos, na mesma ordem, tratando dos mesmos tópicos**. O que cresce é a
+complexidade e a completude, nunca o escopo.
+
+| Volume | Nível | Páginas | O que faz |
+|---|---|---|---|
+| [`fwi_nivel1_introdutorio.pdf`](fwi_nivel1_introdutorio.pdf) | Introdutório | 59 | *O quê* e *por quê*. Ideias, figuras, analogias e conclusões. As fórmulas aparecem, mas são **lidas em palavras**, não derivadas. |
+| [`fwi_nivel2_intermediario.pdf`](fwi_nivel2_intermediario.pdf) | Intermediário | 67 | *Como se faz*. Todas as deduções, as versões discretas, os algoritmos, as contas de dimensionamento e exercícios resolvidos. |
+| [`fwi_nivel3_avancado.pdf`](fwi_nivel3_avancado.pdf) | Avançado | 65 | *Por que funciona e quando falha*. Espaços de funções, teoria de espalhamento, estrutura da Hessiana, multiparâmetro, funcionais alternativos e inferência. |
+
+Os doze capítulos, idênticos nos três volumes:
+
+| # | Capítulo | # | Capítulo |
+|---|---|---|---|
+| 1 | O que é FWI | 7 | Verificação do gradiente |
+| 2 | Do meio elástico à equação acústica | 8 | Otimização e a Hessiana |
+| 3 | Diferenças finitas: estabilidade e dispersão | 9 | A FWI completa: fluxo de trabalho |
+| 4 | Bordas, superfície livre e aquisição | 10 | Regularização e informação a priori |
+| 5 | Função objetivo e *cycle skipping* | 11 | Os limites da física adotada |
+| 6 | O método do estado adjunto | 12 | Diagnóstico |
+
+Isso permite três modos de leitura: **em profundidade crescente** (volume 1
+inteiro, depois o 2, depois o 3); **por tópico** (o capítulo 6 dos três
+volumes em sequência, por exemplo); ou **por necessidade** (o volume 2 como
+texto principal, descendo ao 1 quando uma ideia não fizer sentido e subindo ao
+3 quando precisar do detalhe fino). Marcas ao longo do texto apontam o caminho
+entre os níveis.
+
+**Toda ferramenta matemática é apresentada antes de ser aplicada.** Onde o
+texto vai usar multiplicadores de Lagrange, análise de von Neumann,
+transformada de Hilbert, espaços de Hilbert ou inferência bayesiana, uma caixa
+*Antes de usar* introduz a ferramenta, fixa a notação e destaca exatamente a
+propriedade que será explorada adiante — separando aprender a ferramenta de
+aprender a aplicação.
+
+Os três volumes compartilham o estilo `docs/fwiestilo.sty` e usam o mesmo
+conjunto de caixas: **a ideia** (a abertura de cada capítulo em uma frase),
+**antes de usar** (o preparo matemático), **teoria**, **prática**, **atenção**,
+**armadilha**, **derivação**, **exercícios** e **o que fica** (o fechamento).
 
 ---
 
@@ -349,7 +399,10 @@ longa.
 ├── README.md
 ├── requirements.txt
 ├── menu.py                       # lançador interativo das aulas
-├── curso_fwi_completo.pdf        # o PDF teórico (61 páginas)
+├── curso_fwi_completo.pdf        # o PDF que acompanha as aulas (61 páginas)
+├── fwi_nivel1_introdutorio.pdf   # coleção em três níveis: introdutório
+├── fwi_nivel2_intermediario.pdf  #                          intermediário
+├── fwi_nivel3_avancado.pdf       #                          avançado
 ├── aulas/
 │   ├── aula00_ambiente.py
 │   ├── aula01_regime_acustico.py
@@ -378,7 +431,11 @@ longa.
 ├── testes/
 │   └── verificar_fisica.py       # 34 verificações de física e matemática
 ├── docs/
-│   └── curso_fwi.tex             # fonte LaTeX do PDF
+│   ├── fwiestilo.sty             # estilo compartilhado pelos três volumes
+│   ├── curso_fwi.tex             # fonte do PDF que acompanha as aulas
+│   ├── fwi_nivel1_introdutorio.tex
+│   ├── fwi_nivel2_intermediario.tex
+│   └── fwi_nivel3_avancado.tex
 └── saidas/
     └── aulaXX/                   # figuras PNG geradas pelas aulas
 ```
@@ -432,20 +489,25 @@ matplotlib 3.11, PyFWI 0.1.10 e pyopencl 2026.1 sobre uma NVIDIA RTX 3060.
 
 ---
 
-## Recompilando o PDF
+## Recompilando os PDFs
 
-É preciso XeLaTeX. O fonte fica em `docs/`, as figuras vêm de `saidas/` e o
-PDF versionado fica na raiz:
+É preciso XeLaTeX. Os fontes ficam em `docs/`, as figuras vêm de `saidas/` e os
+PDFs versionados ficam na raiz:
 
 ```bash
 cd docs
-xelatex curso_fwi.tex      # duas vezes, para sumário e referências cruzadas
-xelatex curso_fwi.tex
+for f in curso_fwi fwi_nivel1_introdutorio \
+         fwi_nivel2_intermediario fwi_nivel3_avancado; do
+    xelatex -interaction=nonstopmode "$f.tex"   # duas vezes, pelo sumário
+    xelatex -interaction=nonstopmode "$f.tex"   # e pelas referências cruzadas
+done
 cp curso_fwi.pdf ../curso_fwi_completo.pdf
+cp fwi_nivel*.pdf ..
 ```
 
-Se você alterar o código de uma aula, rode-a antes de recompilar para que as
-figuras do PDF reflitam a mudança.
+Os três volumes compartilham `docs/fwiestilo.sty`: mexer nele exige recompilar
+os três. Se você alterar o código de uma aula, rode-a antes de recompilar, para
+que as figuras dos PDFs reflitam a mudança.
 
 ---
 
