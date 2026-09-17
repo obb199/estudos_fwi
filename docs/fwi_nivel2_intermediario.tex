@@ -81,7 +81,7 @@ Marcas como esta apontam para os outros n\'iveis:
 
 \ponte{N\'ivel 1, Cap.\ 6}{a mesma ideia contada sem matem\'atica, se a
 dedu\c{c}\~ao a seguir ficar abstrata demais.}
-\ponte{N\'ivel 3, §6.5}{a mesma dedu\c{c}\~ao em espa\c{c}os de
+\ponte{N\'ivel 3, §6.2}{a mesma dedu\c{c}\~ao em espa\c{c}os de
 fun\c{c}\~oes, com a derivada de Fr\'echet e os termos de fronteira
 tratados com rigor.}
 
@@ -193,18 +193,21 @@ O custo total de uma FWI \'e, em boa aproxima\c{c}\~ao,
 \begin{equation}
 \text{custo} \;\approx\;
 n_{\text{iter}} \times n_{\text{bandas}} \times n_{\text{tiros}}
-\times \underbrace{2}_{\text{direto + adjunto}}
-\times \underbrace{(1 + n_{\text{busca}})}_{\text{busca linear}}
+\times \bigl(\underbrace{2}_{\text{direto + adjunto}}
+ + \underbrace{n_{\text{busca}}}_{\text{busca linear}}\bigr)
 \times \text{custo}_{\text{modelagem}} .
 \label{eq:custo}
 \end{equation}
 
-O fator 2 \'e o pre\c{c}o do gradiente adjunto (Cap.~\ref{cap:adjunto}); o
-fator da busca linear costuma valer entre 1 e 3 (Cap.~\ref{cap:otimizacao}).
-Com 30 itera\c{c}\~oes, 3 bandas, 200 tiros e busca linear de 2
-avalia\c{c}\~oes, isso d\'a cerca de $30 \times 3 \times 200 \times 2 \times 3
-= 108\,000$ modelagens completas. Se cada uma custa 10 segundos, s\~ao
-12{,}5 dias de m\'aquina --- em um n\'ucleo.
+O 2 \'e o pre\c{c}o do gradiente adjunto (Cap.~\ref{cap:adjunto}); cada
+avalia\c{c}\~ao da busca linear custa mais uma modelagem direta, e
+$n_{\text{busca}}$ costuma valer entre 1 e 3 (Cap.~\ref{cap:otimizacao}). (Uma
+busca que imponha a condi\c{c}\~ao de curvatura de Wolfe precisa do gradiente
+em cada tentativa, e custa o dobro por avalia\c{c}\~ao.) Com 30
+itera\c{c}\~oes, 3 bandas, 200 tiros e busca linear de 2 avalia\c{c}\~oes, isso
+d\'a cerca de $30 \times 3 \times 200 \times (2+2) = 72\,000$ modelagens
+completas. Se cada uma custa 10 segundos, s\~ao 8{,}3 dias de m\'aquina --- em
+um n\'ucleo.
 
 \begin{pratica}[As duas alavancas que mudam ordens de grandeza]
 \textbf{Paralelismo por tiro.} O gradiente \'e uma \emph{soma} sobre tiros
@@ -230,10 +233,12 @@ em meio de velocidade $c$,
 Com o espectro de uma Ricker, a frequ\^encia que governa a resolu\c{c}\~ao \'e
 a banda a $-6$\,dB, aproximadamente $1{,}6 f_0$ (§\ref{sec:ricker}).
 
-\textbf{Profundidade de investiga\c{c}\~ao.} Governada pela abertura:
+\textbf{Profundidade de investiga\c{c}\~ao.} Governada pela abertura --- a
+profundidade t\'ipica de penetra\c{c}\~ao das ondas mergulhantes (Morgan
+\emph{et al.}, 2013):
 \begin{equation}
-z_{\max} \approx \frac{x_{\text{off}}^{\max}}{3}\ \text{a}\
-\frac{x_{\text{off}}^{\max}}{2}.
+z_{\max} \approx \frac{x_{\text{off}}^{\max}}{6}\ \text{a}\
+\frac{x_{\text{off}}^{\max}}{3}.
 \end{equation}
 
 Al\'em disso, os comprimentos de onda \emph{muito longos} do modelo --- a
@@ -252,10 +257,10 @@ $f_0 = 8$\,Hz. Qual o menor detalhe resolv\'ivel?
 bandas, quantas itera\c{c}\~oes por banda cabem, supondo busca linear de 2
 avalia\c{c}\~oes?
 \end{enumerate}
-\textbf{Respostas.} (1) Entre 2 e 3\,km. (2) A banda \'util vai at\'e
+\textbf{Respostas.} (1) Entre 1 e 2\,km. (2) A banda \'util vai at\'e
 $\approx 1{,}6 \times 8 = 12{,}8$\,Hz; $\delta_{\min} = 2500/(2\cdot 12{,}8)
 \approx 98$\,m. (3) De \eqref{eq:custo}: $50\,000 = n_{\text{iter}} \times 3
-\times 100 \times 2 \times 3 \Rightarrow n_{\text{iter}} \approx 28$ por
+\times 100 \times (2 + 2) \Rightarrow n_{\text{iter}} \approx 41$ por
 banda.
 \end{exercicio}
 
@@ -340,10 +345,10 @@ v_s = \sqrt{\frac{\mu}{\rho}} .
 \end{equation}
 
 \begin{pratica}[Onde isso aparece na pr\'atica]
-Praticamente todo c\'odigo de produ\c{c}\~ao (incluindo o PyFWI, usado no
-curso que acompanha esta cole\c{c}\~ao) resolve exatamente
+Muitos c\'odigos el\'asticos de diferen\c{c}as finitas (entre eles o PyFWI,
+usado no curso que acompanha esta cole\c{c}\~ao) resolvem exatamente
 \eqref{eq:momento}--\eqref{eq:hooke} na forma \emph{velocidade--tens\~ao} de
-primeira ordem, em malha intercalada. O regime ac\'ustico \'e obtido
+primeira ordem, em malha intercalada. Neles, o regime ac\'ustico \'e obtido
 \textbf{zerando $v_s$ no modelo}, n\~ao trocando de solver.
 \end{pratica}
 
@@ -543,7 +548,7 @@ frequ\^encia de \textbf{pico}. Normalizando e resolvendo
 $\abs{W(f)}/\abs{W(f_0)} = \eta$ com $u = (f/f_0)^{2}$, chega-se a
 $u\,e^{1-u} = \eta$, cujas ra\'izes $u>1$ d\~ao
 \[
-\eta = 0{,}5\ (-6\,\text{dB}):\ f \approx 1{,}63 f_0,
+\eta = 0{,}5\ (-6\,\text{dB}):\ f \approx 1{,}64 f_0,
 \qquad
 \eta = 0{,}1\ (-20\,\text{dB}):\ f \approx 2{,}21 f_0 .
 \]
@@ -774,8 +779,8 @@ dispers\~ao saem da mesma conta, feita duas vezes com perguntas diferentes.
 No tempo usa-se o esquema \emph{leap-frog} de segunda ordem:
 \begin{equation}
 p_i^{n+1} = 2p_i^{n} - p_i^{n-1}
- + c_i^{2}\,\Delta t^{2}\left[\nabla^{2}_{h} p^{n}\right]_i
- + \Delta t^{2} s_i^{n}.
+ + c_i^{2}\,\Delta t^{2}\left(\left[\nabla^{2}_{h} p^{n}\right]_i
+ + s_i^{n}\right).
 \label{eq:leapfrog}
 \end{equation}
 
@@ -896,8 +901,9 @@ $c_{\text{num}}/c = 0{,}9939$ (erro de $0{,}6\%$). O esquema completo
 previsto --- mas $1{,}0081$ com $C=0{,}551$: erro real de $0{,}8\%$, j\'a
 \textbf{maior} que o previsto pela curva.
 
-Em $\mathcal{O}(8)$ o efeito \'e dram\'atico: com $G=5$ e $C=0{,}5$ a curva
-espacial promete $0{,}07\%$ e o esquema completo entrega $1{,}6\%$ --- porque
+Em $\mathcal{O}(8)$ o efeito \'e dram\'atico: com $G=5$ e
+$C = 0{,}9\,C_{\lim} \approx 0{,}50$ a curva espacial promete $0{,}07\%$ e o
+esquema completo entrega $1{,}6\%$ --- porque
 o erro espacial praticamente sumiu e sobrou o temporal, sozinho.
 
 \textbf{Conclus\~ao:} perto do limite CFL, e sobretudo em ordem alta, quem
@@ -1100,11 +1106,12 @@ remover as m\'ultiplas do dado antes. Ignorar n\~ao \'e op\c{c}\~ao.
 \section{Aquisi\c{c}\~ao}
 \label{sec:aquisicao}
 
-A FWI trabalha \emph{sempre} em \emph{shot gathers}, e a raz\~ao \'e
-conceitual: $F$ simula um tiro por vez, ent\~ao o res\'iduo
-$F(\mvec) - \dobs$ tem de ser calculado nessa organiza\c{c}\~ao. \'E
-tamb\'em por isso que a FWI n\~ao usa dado empilhado --- o empilhamento
-descarta a depend\^encia com o afastamento, que \'e justamente a
+A FWI trabalha em \emph{shot gathers}, e a raz\~ao \'e conceitual: $F$ simula
+tiros, ent\~ao o res\'iduo $F(\mvec) - \dobs$ tem de ser calculado nessa
+organiza\c{c}\~ao --- um tiro por vez ou, para acelerar, somas codificadas de
+tiros que o simulador reproduz exatamente (Krebs \emph{et al.}, 2009; N\'ivel 3,
+Cap.~8). O que ela n\~ao usa \'e o dado empilhado do processamento: o
+empilhamento descarta a depend\^encia com o afastamento, que \'e justamente a
 informa\c{c}\~ao que separa velocidade de profundidade.
 
 \begin{figure}[htbp]
@@ -1131,16 +1138,18 @@ x_{\text{cross}} &= 2h_1\sqrt{\frac{c_2+c_1}{c_2-c_1}}
 A segunda \'e bem maior que a primeira --- no modelo da aula 04 do curso,
 2291\,m contra 1006\,m. As refra\c{c}\~oes dominam o afastamento longo e s\~ao
 a fonte mais rica de informa\c{c}\~ao sobre velocidade de grande escala.
-\item \textbf{Reflex\~oes}: $t(x)^{2} = t_0^{2} + x^{2}/v_{\text{rms}}^{2}$
---- hip\'erboles cuja curvatura revela a velocidade m\'edia.
+\item \textbf{Reflex\~oes}: $t(x)^{2} \approx t_0^{2} + x^{2}/v_{\text{rms}}^{2}$
+--- hip\'erboles cuja curvatura revela a velocidade RMS at\'e o refletor
+(exata para uma camada; em meio estratificado, aproxima\c{c}\~ao de afastamento
+pequeno).
 \item \textbf{Difra\c{c}\~oes}: hip\'erboles de \'apice deslocado, geradas por
 pontos isolados.
 \end{itemize}
 
 \begin{teoria}[Abertura e profundidade de investiga\c{c}\~ao]
 \[
-z_{\max} \;\approx\; \frac{x_{\text{off}}^{\max}}{3}
-\ \text{a}\ \frac{x_{\text{off}}^{\max}}{2}
+z_{\max} \;\approx\; \frac{x_{\text{off}}^{\max}}{6}
+\ \text{a}\ \frac{x_{\text{off}}^{\max}}{3}
 \]
 A raz\~ao \'e geom\'etrica: para separar velocidade de posi\c{c}\~ao \'e
 preciso iluminar cada ponto com \emph{\^angulos variados}, e isso exige raios
@@ -1204,8 +1213,9 @@ modelo inicial e a motiva\c{c}\~ao de todos os funcionais alternativos.
 \textbf{Convexa} \'e a fun\c{c}\~ao cujo gr\'afico fica \emph{abaixo} de
 qualquer corda: $g(\theta a + (1-\theta)b) \le \theta g(a) + (1-\theta)g(b)$
 para $\theta\in[0,1]$. A propriedade que interessa \'e a consequ\^encia:
-\textbf{uma fun\c{c}\~ao convexa tem um \'unico m\'inimo}, e qualquer
-m\'etodo que desce pelo gradiente chega nele, venha de onde vier.
+\textbf{numa fun\c{c}\~ao convexa, todo m\'inimo local \'e global} (e, se ela
+for \emph{estritamente} convexa, o minimizador \'e \'unico). Um m\'etodo de
+descida bem projetado chega a ele, venha de onde vier.
 
 \textbf{Sem convexidade}, o gradiente carrega apenas informa\c{c}\~ao
 \emph{local}: diz para que lado descer \emph{aqui}, e nada sobre onde fica o
@@ -1302,7 +1312,8 @@ $f$ (Hz) & $T/2$ (ms) & $\abs{\delta c}_{\max}$ (m/s) & em \% \\
 
 O curso mediu o \textbf{vale de atra\c{c}\~ao} de cada frequ\^encia --- o
 conjunto de velocidades iniciais que converge para o m\'inimo certo --- e
-comparou com \eqref{eq:tolerancia}:
+comparou com \eqref{eq:tolerancia}, usando o percurso m\'edio
+fonte--receptor da geometria do experimento ($L \approx 1580$\,m):
 
 \begin{center}
 \begin{tabular}{@{}rrrr@{}}
@@ -1409,15 +1420,16 @@ funcional. As formas mais usadas, com a ideia de cada uma:
 \midrule
 $L_2$ cl\'assico & $\tfrac12\int (d_{\text{cal}}-d_{\text{obs}})^{2}$
   & \emph{cycle skipping} \\
-Envolt\'oria & compara $\abs{\mathcal{H}\{d\}}$ (envolt\'oria de Hilbert),
-  que \'e insens\'ivel \`a fase fina & perde resolu\c{c}\~ao \\
+Envolt\'oria & \raggedright compara s\'o a envolt\'oria
+  $E = \sqrt{d^{2} + (\mathcal{H}d)^{2}}$ ($\mathcal{H}$: transformada de
+  Hilbert), insens\'ivel \`a fase fina & perde resolu\c{c}\~ao \\
 Correla\c{c}\~ao cruzada & mede o \emph{deslocamento} $\Delta T$ que maximiza
   a correla\c{c}\~ao e penaliza $\Delta T^{2}$ & precisa janelar \\
 Transporte \'otimo & dist\^ancia de Wasserstein entre sinais tratados como
   distribui\c{c}\~oes de massa: convexa em rela\c{c}\~ao a deslocamentos &
-  custo alto; exige positividade \\
+  exige positividade \\
 Adaptativa (AWI) & estima o filtro de Wiener $u$ que leva o sint\'etico ao
-  observado e penaliza $\norm{t\,u}/\norm{u}$ & mais par\^ametros \\
+  observado e penaliza $\norm{t\,u}^{2}/\norm{u}^{2}$ & mais par\^ametros \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1956,7 +1968,8 @@ $\alpha$ & \textbf{Num\'erico (centrado)} & \textbf{Raz\~ao} \\
 \begin{atencao}[A escolha da dire\c{c}\~ao $\mathbf{h}$]
 Uma dire\c{c}\~ao \emph{aleat\'oria} \'e quase ortogonal ao gradiente (que \'e
 suave), o que deixa $\inner{\mathbf{g}}{\mathbf{h}}$ pequeno e o teste
-dominado pela curvatura. Use uma dire\c{c}\~ao \textbf{suave} --- o pr\'oprio
+dominado por arredondamento e pelos termos de ordem superior (a curvatura em
+si se cancela na diferen\c{c}a centrada). Use uma dire\c{c}\~ao \textbf{suave} --- o pr\'oprio
 gradiente normalizado \'e a escolha mais confi\'avel.
 \end{atencao}
 
@@ -2504,10 +2517,17 @@ Erro relativo dos \emph{dados}: $0{,}2573$ (inicial) $\to$ $0{,}0719$ (final).
 
 \begin{atencao}[Leia este resultado com honestidade]
 A vantagem da multiescala aqui \'e real mas \textbf{modesta} --- $0{,}15$
-pontos percentuais. E isso \'e esperado: o modelo inicial tem apenas 8\% de
-erro e correla\c{c}\~ao $0{,}93$ com o verdadeiro, ou seja, j\'a est\'a
-\emph{dentro} do vale de atra\c{c}\~ao de 25\,Hz. Quando o monoescala n\~ao
-sofre \emph{cycle skipping}, n\~ao h\'a muito para o multiescala resgatar.
+pontos percentuais. E isso \'e esperado: o pr\'oprio monoescala
+\emph{melhorou} o modelo, sinal de que o inicial j\'a estava dentro do vale de
+atra\c{c}\~ao de 25\,Hz. Quando o monoescala n\~ao sofre \emph{cycle
+skipping}, n\~ao h\'a muito para o multiescala resgatar.
+
+Note que isso \emph{n\~ao} se deduz dos 8\% por \eqref{eq:tolerancia}: a 25\,Hz,
+com $c \approx 2300$\,m/s e percursos de 1--2\,km, a toler\^ancia seria de
+2--5\%. A diferen\c{c}a \'e que \eqref{eq:tolerancia} fala de erro
+\emph{cinem\'atico} acumulado no percurso, enquanto o erro relativo de modelo
+\'e uma norma global que mistura todas as escalas --- um inicial suave pode ter
+8\% de erro relativo e cinem\'atica quase certa.
 
 Note tamb\'em a linha da correla\c{c}\~ao: ela \emph{piorou} em rela\c{c}\~ao
 ao inicial nos dois casos, enquanto o erro relativo melhorou. M\'etricas
@@ -2671,11 +2691,19 @@ J_{\text{total}}(\mvec) = J_{\text{dados}}(\mvec) + \lambda\,R(\mvec),
 \end{equation}
 
 \begin{atencao}[Uma distin\c{c}\~ao que evita confus\~ao]
-Regulariza\c{c}\~ao \textbf{n\~ao} melhora o ajuste dos dados: no \'otimo, por
-constru\c{c}\~ao, $J_{\text{dados}}$ s\'o pode ficar igual ou \emph{pior} do
-que sem ela. O que ela faz \'e escolher, entre os muitos modelos que ajustam
-os dados igualmente bem, aquele mais plaus\'ivel segundo um crit\'erio que
-\emph{voc\^e} definiu.
+Regulariza\c{c}\~ao \textbf{n\~ao} existe para melhorar o ajuste dos dados:
+comparando os minimizadores \emph{globais} com e sem ela, por
+constru\c{c}\~ao, $J_{\text{dados}}$ s\'o pode ficar igual ou \emph{pior}. O
+que ela faz \'e escolher, entre os muitos modelos que ajustam os dados
+igualmente bem, aquele mais plaus\'ivel segundo um crit\'erio que \emph{voc\^e}
+definiu.
+
+(Num problema n\~ao convexo, com otimiza\c{c}\~ao local, a compara\c{c}\~ao
+pr\'atica pode sair ao contr\'ario: partindo do mesmo inicial, a
+regulariza\c{c}\~ao pode desviar a trajet\'oria de um m\'inimo local e terminar
+com ajuste melhor --- Esser \emph{et al.} (2018) usam restri\c{c}\~oes de TV
+exatamente com esse fim. \'E efeito de trajet\'oria, n\~ao de ajuste no
+\'otimo.)
 
 Isso significa que a escolha de $R$ \'e uma afirma\c{c}\~ao sobre a geologia,
 e precisa ser justificada como tal.
@@ -2816,9 +2844,12 @@ onde se deixa de comprar suavidade barata e se come\c{c}a a pagar com ajuste.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.78\textwidth]{../saidas/aula13/02_curva_em_L.png}
-\caption{Curva em L medida pelo c\'odigo do curso. O cotovelo \'e o
-compromisso: \`a esquerda, sobre-regulariza\c{c}\~ao (ajuste sacrificado);
-\`a direita, ru\'ido entrando no modelo.}
+\caption{Curva em L medida pelo c\'odigo do curso ($J_{\text{dados}}$ no eixo
+horizontal, $R$ no vertical; os r\'otulos s\~ao $\lambda/\lambda_0$). O cotovelo
+\'e o compromisso: no ramo vertical, \`a esquerda ($\lambda$ pequeno), $R$
+cresce sem ganho de ajuste --- ru\'ido entrando no modelo; no ramo horizontal,
+\`a direita ($\lambda$ grande), sobre-regulariza\c{c}\~ao, com ajuste
+sacrificado.}
 \end{figure}
 
 \begin{armadilha}[Uma exig\^encia de honestidade]
@@ -2881,8 +2912,10 @@ comprimento de onda no modelo. Tikhonov, TV, ou nenhum dos dois?
 fronteira nulo com condi\c{c}\~oes homog\^eneas), logo
 $\nabla R = -\nabla^{2}m$. (2) Porque $\abs{\nabla m}$ n\~ao \'e
 diferenci\'avel em $\nabla m = 0$, que \'e a situa\c{c}\~ao de toda regi\~ao
-homog\^enea; com $\varepsilon$ grande, $\sqrt{\abs{\nabla m}^2+\varepsilon^2}
-\approx \varepsilon$ e a TV degenera em Tikhonov. (3) Qualquer um dos dois
+homog\^enea; com $\varepsilon \gg \abs{\nabla m}$,
+$\sqrt{\abs{\nabla m}^2+\varepsilon^2} \approx \varepsilon +
+\abs{\nabla m}^{2}/(2\varepsilon)$ --- a menos de uma constante, Tikhonov com
+peso $1/\varepsilon$ --- e a TV degenera em Tikhonov. (3) Qualquer um dos dois
 ajuda --- este \'e o caso em que a regulariza\c{c}\~ao \'e apropriada. TV se
 voc\^e quiser preservar interfaces reais no meio da oscila\c{c}\~ao.
 \end{exercicio}
@@ -2952,13 +2985,15 @@ $c=2000,\ \rho=2{,}00$ & $c=2400,\ \rho=1{,}67$ & $+0{,}0010$ \\
 
 As duas primeiras linhas produzem \emph{exatamente} a mesma reflex\~ao por
 causas diferentes. A terceira \'e pior: velocidade 20\% maior com densidade
-17\% menor d\'a reflex\~ao praticamente \textbf{nula} --- uma FWI ac\'ustica
-de densidade constante interpretaria essa interface como inexistente.
+17\% menor d\'a reflex\~ao praticamente \textbf{nula} em incid\^encia normal ---
+nas reflex\~oes de afastamento curto, a interface n\~ao aparece. Ela s\'o \'e
+vista pela cinem\'atica das ondas que a atravessam, ou pela varia\c{c}\~ao de
+$R$ com o \^angulo, que exige afastamento.
 
 \'E o exemplo mais limpo de ambiguidade velocidade--densidade, e a raiz do
 \emph{crosstalk} em invers\~ao multipar\^ametro.
 
-\ponte{N\'ivel 3, Cap.\ 11}{o tratamento quantitativo disso: padr\~oes de
+\ponte{N\'ivel 3, §2.3 e Cap.\ 11}{o tratamento quantitativo disso: padr\~oes de
 radia\c{c}\~ao, que mostram \emph{em quais \^angulos} cada par\^ametro
 imprime a sua assinatura --- e portanto que aquisi\c{c}\~ao os separa.}
 
@@ -2985,6 +3020,15 @@ Anisotr\'opica (VTI) & $+\epsilon,\delta$ & 2--3$\times$ & folhelhos \\
 \end{tabular}
 \end{center}
 
+\begin{atencao}[Os fatores de custo s\~ao na mesma malha]
+A malha \'e dimensionada pela \emph{menor} velocidade (receita do
+Cap.~\ref{cap:numerico}), e na el\'astica ela \'e $v_s$. Como o
+custo 2D escala com $\Delta h^{-3}$ e o 3D com $\Delta h^{-4}$, a raz\~ao
+$v_p/v_s$ entra \emph{al\'em} do fator da tabela: com $v_p/v_s = 2$, mais
+$8\times$ em 2D e $16\times$ em 3D. Em sedimento raso e mole, com $v_s$ muito
+baixo, a diferen\c{c}a chega a ordens de grandeza.
+\end{atencao}
+
 \section{Limite 3: atenua\c{c}\~ao e o fator $Q$}
 
 \begin{matematica}[causalidade, e por que ela amarra amplitude a fase]
@@ -2998,8 +3042,10 @@ reduzir o m\'odulo; atrasar \'e girar o argumento.
 
 \textbf{Causalidade.} Nenhum sinal pode chegar antes de ser emitido. Isso
 parece \'obvio e tem uma consequ\^encia matem\'atica forte: se a resposta \'e
-causal, a sua transformada \'e anal\'itica no semiplano superior, e as partes
-real e imagin\'aria deixam de ser independentes --- ficam ligadas pelas
+causal, a sua transformada \'e anal\'itica num semiplano complexo de
+frequ\^encia (o inferior, com a conven\c{c}\~ao de Fourier deste volume; o
+superior, com a conven\c{c}\~ao oposta $e^{+\mathrm{i}\omega t}$, comum em
+f\'isica), e as partes real e imagin\'aria deixam de ser independentes --- ficam ligadas pelas
 rela\c{c}\~oes de \textbf{Kramers--Kronig}, que expressam uma como integral da
 outra.
 
@@ -3063,7 +3109,9 @@ laplacianos fracion\'arios ou com uma soma de mecanismos de relaxa\c{c}\~ao
 \subsection*{O que $Q$ faz com um pulso}
 
 Aplicando \eqref{eq:kjartansson} a uma Ricker de $f_0 = 20$\,Hz,
-$c_0 = 2000$\,m/s, $L = 1500$\,m:
+$c_0 = 2000$\,m/s, $L = 1500$\,m (frequ\^encia de pico do espectro
+cont\'inuo; a FFT da aula~14, com resolu\c{c}\~ao de $0{,}24$\,Hz, arredonda o
+caso $Q = 200$ para $18{,}8$\,Hz):
 
 \begin{center}
 \begin{tabular}{@{}rrrr@{}}
@@ -3071,7 +3119,7 @@ $c_0 = 2000$\,m/s, $L = 1500$\,m:
 $Q$ & $\gamma$ & \textbf{amplitude rel.} & $f$ de pico (Hz) \\
 \midrule
 $10\,000$ & $3{,}2\times10^{-5}$ & 1{,}0000 & 20{,}0 \\
-200 & $1{,}59\times10^{-3}$ & 0{,}7738 & 18{,}8 \\
+200 & $1{,}59\times10^{-3}$ & 0{,}7738 & 18{,}9 \\
 100 & $3{,}18\times10^{-3}$ & 0{,}6008 & 17{,}8 \\
 50  & $6{,}37\times10^{-3}$ & 0{,}3713 & 15{,}9 \\
 20  & $1{,}59\times10^{-2}$ & 0{,}1056 & 11{,}5 \\
@@ -3321,8 +3369,8 @@ colis\~ao \'e da \'area, n\~ao deste texto.
 Banda da fonte & $f_{\max} \approx 2{,}5 f_0$ (malha);
   $f \approx 1{,}6 f_0$ (resolu\c{c}\~ao) \\
 Resolu\c{c}\~ao & $\delta_{\min} \approx \lambda/2 = c/2f$ \\
-Penetra\c{c}\~ao & $z_{\max} \approx x_{\text{off}}^{\max}/3$ a
-  $x_{\text{off}}^{\max}/2$ \\
+Penetra\c{c}\~ao & $z_{\max} \approx x_{\text{off}}^{\max}/6$ a
+  $x_{\text{off}}^{\max}/3$ \\
 Malha & $\Delta h = c_{\min}/(G f_{\max})$, $G = 8$ (O4) ou 5 (O8) \\
 Passo de tempo & $\Delta t = 0{,}9\,C_{\lim}\Delta h/c_{\max}$;
   $C_{\lim} = 0{,}61$ (O4), $0{,}55$ (O8) em 2D \\
@@ -3337,7 +3385,7 @@ Passo inicial & $\alpha_0 = 0{,}02\max\abs{\mvec}/\max\abs{\mathbf{d}}$ \\
 Peso de regulariza\c{c}\~ao & $\lambda = 0{,}02\,
   J_{\text{dados}}(\mvec_0)/R(\mvec_0)$, refinado pela curva em L \\
 Custo total & $n_{\text{iter}} n_{\text{bandas}} n_{\text{tiros}}
-  \cdot 2 \cdot (1+n_{\text{busca}})$ modelagens \\
+  \cdot (2+n_{\text{busca}})$ modelagens \\
 Kjartansson & $\gamma = \arctan(1/Q)/\pi$;
   $c(\omega) = c_0(\omega/\omega_{\text{ref}})^{\gamma}$ \\
 \bottomrule
@@ -3347,7 +3395,8 @@ Kjartansson & $\gamma = \arctan(1/Q)/\pi$;
 \chapter{Refer\^encias}
 
 \begin{enumerate}[leftmargin=*, itemsep=3pt]
-\item ASNAASHARI, A.; BROSSIER, R.; GARAMBOIS, S.; THORE, P.; VIRIEUX, J.
+\item ASNAASHARI, A.; BROSSIER, R.; GARAMBOIS, S.; AUDEBERT, F.; THORE, P.;
+VIRIEUX, J.
 \emph{Regularized seismic full waveform inversion with prior model
 information.} Geophysics, v.~78, n.~2, p.~R25--R36, 2013.
 
@@ -3361,11 +3410,23 @@ p.~1457--1473, 1995.
 boundary condition for discrete acoustic and elastic wave equations.}
 Geophysics, v.~50, n.~4, p.~705--708, 1985.
 
+\item ESSER, E.; GUASCH, L.; VAN LEEUWEN, T.; ARAVKIN, A.~Y.; HERRMANN, F.~J.
+\emph{Total variation regularization strategies in full-waveform inversion.}
+SIAM Journal on Imaging Sciences, v.~11, n.~1, p.~376--406, 2018.
+
 \item KJARTANSSON, E. \emph{Constant-Q wave propagation and attenuation.}
 Journal of Geophysical Research, v.~84, p.~4737--4748, 1979.
 
+\item KREBS, J.~R. \emph{et al.} \emph{Fast full-wavefield seismic inversion
+using encoded sources.} Geophysics, v.~74, n.~6, p.~WCC177--WCC188, 2009.
+
 \item MARDAN, A.; GIROUX, B.; FABIEN-OUELLET, G. \emph{PyFWI: A Python package
-for full-waveform inversion and reservoir monitoring.} SoftwareX, 2023.
+for full-waveform inversion and reservoir monitoring.} SoftwareX, v.~22,
+art.~101384, 2023.
+
+\item MORGAN, J. \emph{et al.} \emph{Next-generation seismic experiments:
+wide-angle, multi-azimuth, three-dimensional, full-waveform inversion.}
+Geophysical Journal International, v.~195, n.~3, p.~1657--1678, 2013.
 
 \item NOCEDAL, J.; WRIGHT, S.~J. \emph{Numerical Optimization.} 2.~ed.
 Springer, 2006.
@@ -3384,8 +3445,10 @@ approximation.} Geophysics, v.~49, n.~8, p.~1259--1266, 1984.
 \item VIRIEUX, J.; OPERTO, S. \emph{An overview of full-waveform inversion in
 exploration geophysics.} Geophysics, v.~74, n.~6, p.~WCC1--WCC26, 2009.
 
-\item VIRIEUX, J. \emph{et al.} \emph{An Introduction to Full Waveform
-Inversion.} Society of Exploration Geophysicists, 2017.
+\item VIRIEUX, J.; ASNAASHARI, A.; BROSSIER, R.; M\'ETIVIER, L.; RIBODETTI,
+A.; ZHOU, W. \emph{An introduction to full waveform inversion.} In:
+\emph{Encyclopedia of Exploration Geophysics}. Tulsa: Society of Exploration
+Geophysicists, 2014. p.~R1-1--R1-40. DOI 10.1190/1.9781560803027.entry6.
 \end{enumerate}
 
 \vfill

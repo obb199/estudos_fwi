@@ -330,8 +330,10 @@ Inviabiliza tudo.
 
 O \textbf{m\'etodo do estado adjunto} obt\'em o gradiente inteiro com
 \textbf{duas} simula\c{c}\~oes por disparo --- uma para a frente e uma para
-tr\'as --- e o custo \textbf{n\~ao depende do n\'umero de c\'elulas}. \'E a
-diferen\c{c}a entre imposs\'ivel e rotineiro.
+tr\'as --- e o \textbf{n\'umero de simula\c{c}\~oes n\~ao depende do n\'umero
+de c\'elulas}. (Cada simula\c{c}\~ao, claro, fica mais cara numa malha maior;
+o que some \'e o fator ``um milh\~ao''.) \'E a diferen\c{c}a entre imposs\'ivel e
+rotineiro.
 \end{teoria}
 
 \section{O que a FWI recupera bem, e o que n\~ao recupera}
@@ -346,7 +348,8 @@ muito longos): o dado s\'ismico n\~ao tem frequ\^encia baixa o suficiente para
 restringi-la. Isso tem de vir do modelo inicial;
 \item \textbf{o que est\'a abaixo da profundidade de penetra\c{c}\~ao},
 controlada pela abertura da aquisi\c{c}\~ao --- regra pr\'atica: entre um
-ter\c{c}o e metade do maior afastamento fonte--receptor;
+sexto e um ter\c{c}o do maior afastamento fonte--receptor (Morgan \emph{et
+al.}, 2013);
 \item \textbf{detalhes menores que cerca de meio comprimento de onda} da maior
 frequ\^encia \'util;
 \item \textbf{qualquer coisa em zona de sombra}, onde nenhuma onda passou. Ali
@@ -507,15 +510,19 @@ existir, e todo o estado do meio em cada ponto passa a ser descrito por
 
 \begin{teoria}[O que se ganha ao adotar a hip\'otese]
 De cinco campos acoplados (duas velocidades e tr\^es tens\~oes, em 2D) para
-um s\'o. De tr\^es par\^ametros f\'isicos ($v_p$, $v_s$, $\rho$) para,
-tipicamente, um s\'o ($v_p$). O custo computacional cai por um fator de
+um s\'o. De tr\^es par\^ametros f\'isicos ($v_p$, $v_s$, $\rho$) para dois
+($v_p$, $\rho$) --- e, adotando tamb\'em densidade constante, como quase sempre
+se faz, para um s\'o ($v_p$). O custo computacional cai por um fator de
 v\'arias vezes, e o problema inverso fica muito melhor condicionado --- com
 um par\^ametro n\~ao existe \emph{crosstalk}, o vazamento de erro de um
 par\^ametro para outro (Cap.~\ref{cap:limites}).
 \end{teoria}
 
-O resultado da hip\'otese \eqref{eq:mu0} \'e a equa\c{c}\~ao que governa
-praticamente tudo nesta cole\c{c}\~ao:
+A hip\'otese \eqref{eq:mu0} leva a uma \'unica equa\c{c}\~ao escalar para a
+press\~ao. Somando a ela uma simplifica\c{c}\~ao de uso quase universal ---
+\textbf{densidade constante}, que o Cap\'itulo~\ref{cap:limites} volta a
+discutir ---, chega-se \`a equa\c{c}\~ao que governa praticamente tudo nesta
+cole\c{c}\~ao:
 \begin{equation}
 \frac{1}{c(\mathbf{x})^{2}}\,\frac{\partial^{2}p}{\partial t^{2}}
  \;-\; \nabla^{2}p \;=\; s(t)\,\delta(\mathbf{x}-\mathbf{x}_s).
@@ -544,9 +551,9 @@ Repare que o par\^ametro do meio entra como $1/c^{2}$. Essa grandeza tem
 nome --- \textbf{vagarosidade ao quadrado} --- e a equa\c{c}\~ao \'e
 \emph{linear} nela, mas n\~ao em $c$.
 
-Parece detalhe est\'etico. N\~ao \'e: \'e a raz\~ao pela qual quase todo
-c\'odigo de FWI inverte internamente em $m = 1/c^{2}$ e s\'o converte para
-velocidade na hora de mostrar a figura. O Cap\'itulo~\ref{cap:adjunto}
+Parece detalhe est\'etico. N\~ao \'e: \'e a raz\~ao pela qual muitos
+c\'odigos de FWI calculam o gradiente em $m = 1/c^{2}$ e s\'o depois o convertem
+para velocidade. O Cap\'itulo~\ref{cap:adjunto}
 mostra o que isso simplifica.
 \end{atencao}
 
@@ -756,7 +763,7 @@ da press\~ao dele e dos vizinhos nos dois instantes anteriores.}
 \end{center}
 
 O conjunto de vizinhos consultados chama-se \textbf{est\^encil}, e o seu
-tamanho \'e a \textbf{ordem} do esquema. Um est\^encil de 3 pontos por
+tamanho determina a \textbf{ordem} do esquema. Um est\^encil de 3 pontos por
 dire\c{c}\~ao \'e ordem 2; de 5 pontos, ordem 4; de 9 pontos, ordem 8.
 
 \begin{teoria}[Por que ordem alta compensa]
@@ -813,10 +820,11 @@ passo, dobram, quadruplicam, e em poucos milhares de passos o programa
 devolve \texttt{NaN} --- ``n\~ao \'e um n\'umero''.
 
 A intui\c{c}\~ao \'e geom\'etrica: em um passo de tempo, a informa\c{c}\~ao
-f\'isica viaja a dist\^ancia $c\,\Delta t$. Se essa dist\^ancia ultrapassar o
-alcance do est\^encil, a onda estaria ``pulando por cima'' de pontos que o
-esquema nunca consultou --- e o resultado n\~ao tem como estar certo. A conta
-vira um n\'umero adimensional, o \textbf{n\'umero de Courant}:
+f\'isica viaja a dist\^ancia $c\,\Delta t$. Num esquema que s\'o consulta os
+vizinhos imediatos, se essa dist\^ancia passar de uma c\'elula, a onda estaria
+``pulando por cima'' de pontos que o esquema nunca consultou --- e o resultado
+n\~ao tem como estar certo. A conta vira um n\'umero adimensional, o
+\textbf{n\'umero de Courant}:
 \begin{equation}
 C = \frac{c_{\max}\,\Delta t}{\Delta h} \;\le\; C_{\lim}.
 \label{eq:cfl1}
@@ -825,10 +833,11 @@ C = \frac{c_{\max}\,\Delta t}{\Delta h} \;\le\; C_{\lim}.
 Em 2D, os limites s\~ao $C_{\lim} \approx 0{,}71$ (ordem 2), $0{,}61$ (ordem
 4) e $0{,}55$ (ordem 8).
 
-Note que esses valores s\~ao \emph{menores} que 1: o argumento geom\'etrico
-acima d\'a apenas uma condi\c{c}\~ao \textbf{necess\'aria}, e o limite
-verdadeiro --- obtido de uma an\'alise de estabilidade, que o Volume 2 faz ---
-\'e mais apertado do que ela.
+O argumento geom\'etrico d\'a apenas uma condi\c{c}\~ao \textbf{necess\'aria},
+e n\~ao conta a hist\'oria toda. Para ordem 2 em 2D ele acerta em cheio
+($0{,}71 = 1/\sqrt{2}$, a meia diagonal da c\'elula); mas um est\^encil de
+ordem 8 alcan\c{c}a quatro c\'elulas, e mesmo assim o limite \emph{cai}. O
+limite verdadeiro vem de uma an\'alise de estabilidade, que o Volume 2 faz.
 
 \begin{atencao}[Duas leituras contraintuitivas]
 \textbf{(a) Ordem espacial maior \emph{reduz} o passo de tempo m\'aximo.} O
@@ -1116,8 +1125,8 @@ confundi-las \'e comum: elas s\'o \emph{come\c{c}am a existir} a partir da
 dist\^ancia cr\'itica, e s\'o mais longe ainda --- na dist\^ancia de
 cruzamento --- passam a chegar \emph{antes} da direta. S\~ao a fonte mais rica
 de informa\c{c}\~ao sobre a velocidade de grande escala;
-\item \textbf{reflex\~oes} --- hip\'erboles: a curvatura revela a velocidade
-m\'edia at\'e o refletor;
+\item \textbf{reflex\~oes} --- hip\'erboles: a curvatura revela uma velocidade
+m\'edia at\'e o refletor (a m\'edia RMS, que pesa mais as camadas r\'apidas);
 \item \textbf{difra\c{c}\~oes} --- hip\'erboles de \'apice deslocado,
 produzidas por pontos isolados: falhas, quinas, corpos pequenos.
 \end{itemize}
@@ -1125,14 +1134,19 @@ produzidas por pontos isolados: falhas, quinas, corpos pequenos.
 \begin{teoria}[A rela\c{c}\~ao mais \'util da aquisi\c{c}\~ao]
 \[
 \text{profundidade confi\'avel} \;\approx\;
-\frac{\text{afastamento m\'aximo}}{3}\ \text{a}\
-\frac{\text{afastamento m\'aximo}}{2}.
+\frac{\text{afastamento m\'aximo}}{6}\ \text{a}\
+\frac{\text{afastamento m\'aximo}}{3}.
 \]
+(Morgan \emph{et al.}, 2013. O valor exato dentro da faixa depende de quanto a
+velocidade cresce com a profundidade.)
 
-A raz\~ao \'e geom\'etrica. Para separar ``mais lento e mais raso'' de ``mais
-r\'apido e mais fundo'' \'e preciso iluminar cada ponto com \^angulos
-\emph{variados}, e \^angulos variados exigem raios vindo de longe.
-Afastamento curto s\'o produz incid\^encia quase normal, que \'e amb\'igua.
+A raz\~ao \'e geom\'etrica. A velocidade de grande escala vem sobretudo das
+ondas que \emph{mergulham} e voltam \`a superf\'icie, e uma onda que volta a
+uma dist\^ancia $x$ da fonte n\~ao desceu mais que uma fra\c{c}\~ao de $x$. Al\'em
+disso, para separar ``mais lento e mais raso'' de ``mais r\'apido e mais
+fundo'' \'e preciso iluminar cada ponto com \^angulos \emph{variados}, e
+\^angulos variados exigem raios vindo de longe. Afastamento curto s\'o produz
+incid\^encia quase normal, que \'e amb\'igua.
 
 \textbf{Consequ\^encia pr\'atica:} para enxergar mais fundo, aumente o
 \emph{afastamento}. Receptores mais densos combatem \emph{aliasing}; mais
@@ -1140,14 +1154,16 @@ disparos melhoram a raz\~ao sinal/ru\'ido; frequ\^encia maior melhora a
 resolu\c{c}\~ao. Nenhum dos tr\^es ilumina mais fundo.
 \end{teoria}
 
-\begin{atencao}[Por que a FWI nunca usa dado empilhado]
-A FWI trabalha \emph{sempre} com disparo por disparo, e a raz\~ao \'e
-conceitual: o simulador $F$ modela um disparo por vez, ent\~ao o res\'iduo
-tem de ser calculado nessa mesma organiza\c{c}\~ao.
+\begin{atencao}[Por que a FWI n\~ao usa dado empilhado]
+A FWI compara registros de \emph{disparo}, e a raz\~ao \'e conceitual: o
+simulador $F$ modela disparos, ent\~ao o res\'iduo tem de ser calculado nessa
+mesma organiza\c{c}\~ao --- um disparo por vez ou, em t\'ecnicas de
+acelera\c{c}\~ao, somas de disparos que o simulador reproduz \emph{exatamente}
+(a codifica\c{c}\~ao de fontes do Volume 3).
 
-Al\'em disso, o empilhamento descarta justamente a depend\^encia com o
-afastamento --- que \'e a informa\c{c}\~ao que separa velocidade de
-profundidade.
+O que ela n\~ao usa \'e o dado empilhado do processamento convencional: o
+empilhamento descarta justamente a depend\^encia com o afastamento --- que \'e
+a informa\c{c}\~ao que separa velocidade de profundidade.
 \end{atencao}
 
 \subsection*{Dois cuidados de amostragem}
@@ -1170,8 +1186,8 @@ apagar esse eco, e deve ser dimensionada pela \emph{menor} frequ\^encia.
 \item A superf\'icie do topo \'e uma escolha f\'isica: superf\'icie livre
 (com m\'ultiplas) ou absorvente (sem). O sint\'etico e o dado observado
 precisam concordar.
-\item A FWI trabalha disparo a disparo, nunca com dado empilhado.
-\item Profundidade de investiga\c{c}\~ao $\approx$ um ter\c{c}o a metade do
+\item A FWI compara registros de disparo, nunca dado empilhado.
+\item Profundidade de investiga\c{c}\~ao $\approx$ um sexto a um ter\c{c}o do
 maior afastamento. Densidade de receptores e frequ\^encia n\~ao mudam isso.
 \item Ru\'ido aleat\'orio \'e tolerado; ru\'ido coerente e erro de modelagem
 viram geologia falsa.
@@ -1456,7 +1472,7 @@ pesquisa em FWI consiste em substituir a maneira de medir a discord\^ancia:
 $L_2$ cl\'assico & diferen\c{c}a amostra a amostra & \emph{cycle skipping} \\
 Envolt\'oria & compara s\'o o contorno de amplitude & perde resolu\c{c}\~ao \\
 Correla\c{c}\~ao cruzada & penaliza o deslocamento medido & precisa janelar \\
-Transporte \'otimo & dist\^ancia entre ``massas'' de sinal & custo alto \\
+Transporte \'otimo & dist\^ancia entre ``massas'' de sinal & sinal precisa virar massa positiva \\
 Adaptativa (AWI) & penaliza o filtro que casa os dois & mais par\^ametros \\
 \bottomrule
 \end{tabular}
@@ -1668,14 +1684,14 @@ fatos merecem destaque, porque explicam por que o m\'etodo \'e barato:
 muda a fonte (o res\'iduo, nos receptores) e o sentido do tempo. Ou seja: o
 mesmo c\'odigo de simula\c{c}\~ao serve para as duas --- na formula\c{c}\~ao
 ac\'ustica sem atenua\c{c}\~ao, basta rod\'a-lo ao contr\'ario.
-\item \textbf{O custo n\~ao depende do n\'umero de c\'elulas.} Duas
-simula\c{c}\~oes por disparo, e o gradiente inteiro sai. Foi essa
+\item \textbf{O n\'umero de simula\c{c}\~oes n\~ao depende do n\'umero de
+c\'elulas.} Duas simula\c{c}\~oes por disparo, e o gradiente inteiro sai. Foi essa
 observa\c{c}\~ao que tornou a FWI vi\'avel.
 \end{itemize}
 
 \ponte{N\'ivel 2, §6.2}{a dedu\c{c}\~ao pelo Lagrangiano, que mostra
 \emph{por que} a equa\c{c}\~ao adjunta \'e essa e n\~ao outra.}
-\ponte{N\'ivel 3, §6.4}{o adjunto discreto \emph{versus} o cont\'inuo, e por
+\ponte{N\'ivel 3, §3.4}{o adjunto discreto \emph{versus} o cont\'inuo, e por
 que a diferen\c{c}a entre os dois reprova o teste do
 Cap\'itulo~\ref{cap:verificacao}.}
 
@@ -1958,8 +1974,9 @@ Gradiente conjugado & gradiente + dire\c{c}\~ao anterior & bom custo/benef\'icio
 mem\'oria m\'inima \\
 l-BFGS & os \'ultimos $\sim$5--20 passos & \textbf{o padr\~ao} da \'area:
 reconstr\'oi a forma do vale a partir do hist\'orico \\
-Newton & a curvatura exata (Hessiana) & imposs\'ivel: a matriz teria
-$10^{12}$ entradas \\
+Newton & a curvatura exata (Hessiana) & montar a matriz \'e imposs\'ivel
+($10^{12}$ entradas); a vers\~ao \emph{truncada} s\'o usa produtos dela por
+vetores (Volume 3) \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -2139,9 +2156,15 @@ Tempo & --- & 3{,}8 min & 5{,}7 min \\
 
 \begin{atencao}[Leia este resultado com honestidade]
 A vantagem da multiescala aqui \'e real mas \textbf{modesta}. E isso \'e
-esperado: o modelo inicial tem apenas 8\% de erro, ou seja, j\'a est\'a
-\emph{dentro} do vale de atra\c{c}\~ao de 25\,Hz. Quando o monoescala n\~ao
-sofre \emph{cycle skipping}, n\~ao h\'a muito para a multiescala resgatar.
+esperado: o pr\'oprio monoescala \emph{melhorou} o modelo, sinal de que o
+inicial j\'a estava dentro do vale de atra\c{c}\~ao de 25\,Hz. Quando o
+monoescala n\~ao sofre \emph{cycle skipping}, n\~ao h\'a muito para a
+multiescala resgatar.
+
+(Isso n\~ao se deduz do n\'umero 8\% sozinho. Erro relativo de modelo \'e uma
+medida global, que mistura todas as escalas; o crit\'erio do
+Cap\'itulo~\ref{cap:misfit} fala do erro de \emph{tempo} acumulado no percurso.
+Um inicial suave pode ter 8\% de erro relativo e cinem\'atica quase certa.)
 
 A honestidade aqui n\~ao \'e detalhe de estilo: um experimento que confirma o
 que voc\^e queria, pelo motivo errado, \'e pior que nenhum experimento.
@@ -2257,14 +2280,19 @@ J_{\text{total}} = \underbrace{J_{\text{dados}}}_{\text{ajustar o dado}}
 com $\lambda$ regulando o peso relativo das duas exig\^encias.
 
 \begin{atencao}[Uma distin\c{c}\~ao que evita confus\~ao]
-Regulariza\c{c}\~ao \textbf{n\~ao} melhora o ajuste dos dados. Por
-constru\c{c}\~ao, no \'otimo, $J_{\text{dados}}$ s\'o pode ficar igual ou
-\emph{pior} do que ficaria sem ela.
+Regulariza\c{c}\~ao \textbf{n\~ao} existe para melhorar o ajuste dos dados.
+Comparando os \emph{melhores} modelos poss\'iveis com e sem ela, por
+constru\c{c}\~ao $J_{\text{dados}}$ s\'o pode ficar igual ou \emph{pior}.
 
 O que ela faz \'e \emph{escolher}, entre os muitos modelos que ajustam os
 dados praticamente igual, aquele que \'e mais plaus\'ivel segundo um
 crit\'erio que \textbf{voc\^e} definiu. Isso significa que a escolha de $R$ \'e
 uma afirma\c{c}\~ao sobre a geologia, e deve ser justificada como tal.
+
+(Uma ressalva, porque a FWI tem m\'inimos locais: partindo do mesmo modelo
+inicial, uma regulariza\c{c}\~ao pode desviar a invers\~ao de um vale errado e
+terminar com ajuste \emph{melhor} do que a vers\~ao sem ela. Isso \'e efeito do
+caminho percorrido, n\~ao uma contradi\c{c}\~ao da frase acima.)
 \end{atencao}
 
 \begin{matematica}[somar quadrados ou somar m\'odulos: por que a escolha muda o resultado]
@@ -2446,7 +2474,7 @@ simula\c{c}\~ao viola a condi\c{c}\~ao CFL e a invers\~ao n\~ao se recupera.
 \begin{itemize}[leftmargin=*, itemsep=1pt]
 \item H\'a partes do modelo que o dado n\~ao restringe; regularizar \'e
 escolher o que preencher ali.
-\item Regularizar nunca melhora o ajuste dos dados --- escolhe entre modelos
+\item Regularizar n\~ao serve para melhorar o ajuste dos dados --- escolhe entre modelos
 que ajustam igual.
 \item Tikhonov suaviza; TV preserva degraus. A escolha \'e uma afirma\c{c}\~ao
 sobre a geologia.
@@ -2501,14 +2529,14 @@ de f\'isica --- e parece um modelo, n\~ao um erro.
 
 \section{Limite 1: densidade, e a ambiguidade da imped\^ancia}
 
-O que controla a intensidade de uma reflex\~ao n\~ao \'e a velocidade
-sozinha: \'e a \textbf{imped\^ancia}, o produto densidade $\times$ velocidade.
-A consequ\^encia \'e imediata e inc\^omoda:
+O que controla a intensidade de uma reflex\~ao em incid\^encia normal n\~ao
+\'e a velocidade sozinha: \'e a \textbf{imped\^ancia}, o produto densidade
+$\times$ velocidade. A consequ\^encia \'e imediata e inc\^omoda:
 
 \begin{center}
 \begin{tabular}{@{}llr@{}}
 \toprule
-\textbf{Meio 1} & \textbf{Meio 2} & \textbf{Reflex\~ao} \\
+\textbf{Meio 1} & \textbf{Meio 2} & \textbf{Reflex\~ao (incid\^encia normal)} \\
 \midrule
 $c=2000$, $\rho=2{,}00$ & $c=2400$, $\rho=2{,}00$ & $+0{,}091$ \\
 $c=2000$, $\rho=2{,}00$ & $c=2000$, $\rho=2{,}40$ & $+0{,}091$ \\
@@ -2519,8 +2547,10 @@ $c=2000$, $\rho=2{,}00$ & $c=2400$, $\rho=1{,}67$ & $\mathbf{+0{,}001}$ \\
 
 As duas primeiras linhas produzem \emph{exatamente} a mesma reflex\~ao por
 causas diferentes. E a terceira \'e pior: velocidade 20\% maior com densidade
-17\% menor produz reflex\~ao praticamente \textbf{nula} --- uma FWI ac\'ustica
-de densidade constante interpretaria essa interface como inexistente.
+17\% menor produz reflex\~ao praticamente \textbf{nula} --- nas reflex\~oes de
+afastamento curto, essa interface simplesmente n\~ao aparece. S\'o se chega a
+ela por outros caminhos: o atraso das ondas que a atravessam, ou a
+varia\c{c}\~ao da reflex\~ao com o \^angulo, que exige afastamento.
 
 \'E o exemplo mais limpo da ambiguidade velocidade--densidade, e a raiz do
 \emph{crosstalk} em invers\~ao multipar\^ametro: o algoritmo n\~ao consegue
@@ -2550,6 +2580,15 @@ Anisotr\'opica & $+\,$par\^ametros de anisotropia & 2--3$\times$ & folhelhos \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\begin{atencao}[O custo da tabela \'e na mesma malha]
+Os fatores acima comparam uma simula\c{c}\~ao com a outra \emph{na mesma
+grade}. Mas a grade \'e ditada pela menor velocidade
+(Cap.~\ref{cap:numerico}), e na el\'astica ela \'e a da onda S. Com
+$v_p/v_s = 2$, o espa\c{c}amento cai pela metade: mais $8\times$ em 2D e
+$16\times$ em 3D, \emph{em cima} do fator da tabela. Em sedimento raso e mole,
+com $v_s$ muito baixo, a diferen\c{c}a chega a ordens de grandeza.
+\end{atencao}
 
 \section{Limite 3: atenua\c{c}\~ao}
 
@@ -2582,7 +2621,7 @@ $Q$ constante, para uma fonte de 20\,Hz que percorreu 1500\,m:
 $Q$ & \textbf{amplitude que sobra} & \textbf{frequ\^encia de pico} \\
 \midrule
 $\infty$ & $1{,}00$ & $20{,}0$\,Hz \\
-200 & $0{,}77$ & $18{,}8$\,Hz \\
+200 & $0{,}77$ & $18{,}9$\,Hz \\
 100 & $0{,}60$ & $17{,}8$\,Hz \\
 50  & $0{,}37$ & $15{,}9$\,Hz \\
 20  & $0{,}11$ & $11{,}5$\,Hz \\
@@ -2635,7 +2674,7 @@ f\'isica mais simples que explica o meu dado?''}
 \begin{itemize}[leftmargin=*, itemsep=1pt]
 \item Erro de f\'isica n\~ao some: vira estrutura falsa no modelo.
 \item Velocidade e densidade podem se cancelar: uma interface real pode ser
-invis\'ivel.
+invis\'ivel nas reflex\~oes de incid\^encia normal.
 \item A energia el\'astica ausente do modelo ac\'ustico \'e compar\'avel \`a
 do pr\'oprio dado.
 \item Atenuar implica dispersar: ignorar $Q$ erra amplitude \emph{e} fase, e
@@ -2790,7 +2829,7 @@ ilumina\c{c}\~ao desigual, tipicamente dividindo pela energia do campo.
 \item[Res\'iduo] Diferen\c{c}a entre o dado sint\'etico e o observado, amostra
 a amostra. \'E o que alimenta a simula\c{c}\~ao adjunta.
 \item[\emph{Shot gather}] Registro de um \'unico disparo em todos os
-receptores. \'E a organiza\c{c}\~ao em que a FWI sempre trabalha.
+receptores. \'E a organiza\c{c}\~ao natural do dado em FWI.
 \item[Vale de atra\c{c}\~ao] Conjunto de modelos iniciais a partir dos quais
 o algoritmo converge para o m\'inimo correto.
 \item[Zona de Fresnel] Volume ao redor do caminho geom\'etrico da onda ao qual
@@ -2823,16 +2862,28 @@ o volume para quem vai \emph{pesquisar} FWI.
 exploration geophysics.} Geophysics, v.~74, n.~6, p.~WCC1--WCC26, 2009.
 --- a revis\~ao de refer\^encia; comece por ela.
 
-\item VIRIEUX, J. \emph{et al.} \emph{An Introduction to Full Waveform
-Inversion.} Society of Exploration Geophysicists, 2017.
+\item VIRIEUX, J.; ASNAASHARI, A.; BROSSIER, R.; M\'ETIVIER, L.; RIBODETTI,
+A.; ZHOU, W. \emph{An introduction to full waveform inversion.} In:
+\emph{Encyclopedia of Exploration Geophysics}. Tulsa: Society of Exploration
+Geophysicists, 2014. p.~R1-1--R1-40. DOI 10.1190/1.9781560803027.entry6.
+
+\item LAILLY, P. \emph{The seismic inverse problem as a sequence of before
+stack migrations.} In: BEDNAR, J.~B. \emph{et al.} (ed.). \emph{Conference on
+Inverse Scattering: Theory and Application}. Philadelphia: SIAM, 1983.
+p.~206--220.
 
 \item TARANTOLA, A. \emph{Inversion of seismic reflection data in the acoustic
-approximation.} Geophysics, v.~49, n.~8, p.~1259--1266, 1984. --- o artigo
-fundador.
+approximation.} Geophysics, v.~49, n.~8, p.~1259--1266, 1984. --- com
+Lailly (1983), o ponto de partida da FWI moderna.
+
+\item MORGAN, J. \emph{et al.} \emph{Next-generation seismic experiments:
+wide-angle, multi-azimuth, three-dimensional, full-waveform inversion.}
+Geophysical Journal International, v.~195, n.~3, p.~1657--1678, 2013. --- a
+regra de profundidade de penetra\c{c}\~ao.
 
 \item BUNKS, C.; SALECK, F.~M.; ZALESKI, S.; CHAVENT, G. \emph{Multiscale
 seismic waveform inversion.} Geophysics, v.~60, n.~5, p.~1457--1473, 1995.
---- a origem da estrat\'egia multiescala.
+--- a refer\^encia cl\'assica da estrat\'egia multiescala.
 
 \item PLESSIX, R.-E. \emph{A review of the adjoint-state method for computing
 the gradient of a functional with geophysical applications.} Geophysical

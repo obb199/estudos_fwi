@@ -88,11 +88,15 @@ def main():
     a.resultado("tracos totais", geom.ns * geom.nr)
 
     a.teoria("Abertura e profundidade de investigacao", """
-        A regra pratica mais usada:
+        A regra pratica mais usada (Morgan et al., 2013, GJI 195:1657):
 
-            profundidade maxima confiavel ~ offset_maximo / 3  a  offset_maximo / 2
+            profundidade maxima confiavel ~ offset_maximo / 6  a  offset_maximo / 3
 
-        A razao e geometrica. Para iluminar um ponto em profundidade z com
+        O valor exato dentro da faixa depende de quanto a velocidade cresce com
+        a profundidade: e ate ai que descem as ondas mergulhantes, que carregam
+        a informacao de velocidade de grande escala.
+
+        A razao tambem e geometrica. Para iluminar um ponto em profundidade z com
         angulos suficientemente variados -- e e a variedade de angulos que
         permite separar velocidade de posicao -- e preciso ter raios chegando
         de longe. Offset curto so gera incidencia quase normal, que e
@@ -101,7 +105,7 @@ def main():
 
         Confira com os numeros deste levantamento, impressos acima: com o
         offset maximo desta geometria, a faixa confiavel vai ate cerca de um
-        terco a metade desse valor. Abaixo disso a FWI passa a extrapolar -- e
+        sexto a um terco desse valor. Abaixo disso a FWI passa a extrapolar -- e
         extrapolacao, em FWI, tem outro nome: artefato.
     """)
 
@@ -358,7 +362,7 @@ def main():
         "FWI trabalha em shot gathers porque F(m) simula um tiro por vez.",
         "Anatomia do gather: direta (reta), refracoes (retas que cruzam), "
         "reflexoes (hiperboles), difracoes (hiperboles deslocadas).",
-        "Profundidade confiavel ~ offset_maximo / 2 a / 3. Abertura e o que ilumina fundo.",
+        "Profundidade confiavel ~ offset_maximo / 6 a / 3. Abertura e o que ilumina fundo.",
         "Amostragem espacial insuficiente gera aliasing, que a FWI tenta explicar "
         "com estrutura falsa.",
         "Ruido aleatorio a FWI tolera; ruido coerente e erro de modelagem, nao.",

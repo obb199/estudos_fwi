@@ -149,10 +149,14 @@ $F'(m)^{*}$ \'e o que o m\'etodo do estado adjunto calcula ---
 Cap\'itulo~\ref{cap:adjunto}.
 
 \textbf{Por que a distin\c{c}\~ao importa aqui.} O teste de Taylor do
-Cap\'itulo~\ref{cap:verificacao} mede exatamente \eqref{eq:frechet}: a
-afirma\c{c}\~ao ``$E_1 = \mathcal{O}(\alpha^{2})$'' \emph{\'e} a
-verifica\c{c}\~ao emp\'irica de que o resto \'e $o(\norm{\delta m})$ e de que
-o operador usado \'e de fato $F'$.
+Cap\'itulo~\ref{cap:verificacao} verifica a vers\~ao \emph{direcional} disto:
+ao longo de uma dire\c{c}\~ao $\mathbf{h}$ fixa, ``$E_1 = \mathcal{O}(\alpha^{2})$''
+mostra que $\inner{\mathbf{g}}{\mathbf{h}}$ \'e a derivada de $J$ naquela
+dire\c{c}\~ao --- uma propriedade de G\^ateaux, conferida dire\c{c}\~ao a
+dire\c{c}\~ao. A uniformidade que distingue Fr\'echet n\~ao \'e acess\'ivel a
+um n\'umero finito de testes; \'e por isso que se testam v\'arias dire\c{c}\~oes,
+e que o teste do produto escalar, com vetores aleat\'orios, entra como
+complemento.
 
 \textbf{Adjunto de um operador n\~ao quadrado.} Para
 $A:\mathcal{H}_1\to\mathcal{H}_2$ linear limitado, $A^{*}$ \'e o \'unico
@@ -183,8 +187,8 @@ com $R$ o operador de restri\c{c}\~ao aos receptores. A FWI resolve
 \label{eq:J3}
 \end{equation}
 
-\begin{teoria}[Duas formula\c{c}\~oes equivalentes, com consequ\^encias
-algor\'itmicas diferentes]
+\begin{teoria}[Duas formula\c{c}\~oes, com consequ\^encias algor\'itmicas
+diferentes]
 \textbf{Forma reduzida} (a de \eqref{eq:J3}): elimina-se $u$ resolvendo a EDP
 exatamente, e $J$ \'e fun\c{c}\~ao apenas de $m$. Toda a Parte II desta
 cole\c{c}\~ao usa esta forma. Vantagem: o espa\c{c}o de busca \'e pequeno
@@ -192,8 +196,11 @@ cole\c{c}\~ao usa esta forma. Vantagem: o espa\c{c}o de busca \'e pequeno
 Desvantagem: a n\~ao convexidade fica concentrada em $J$.
 
 \textbf{Forma ``tudo de uma vez''} (\emph{all-at-once}): trata-se $(m,u)$ como
-inc\'ognitas conjuntas, com $\mathcal{A}(m)u = f$ como restri\c{c}\~ao
-relaxada:
+inc\'ognitas conjuntas. Com $\mathcal{A}(m)u = f$ imposta como restri\c{c}\~ao
+\emph{exata} (via Lagrangiano, no espa\c{c}o completo), os minimizadores s\~ao os
+mesmos da forma reduzida. A variante mais usada, por\'em, \emph{relaxa} a
+restri\c{c}\~ao numa penalidade --- e s\'o recupera a forma reduzida quando
+$\mu\to\infty$:
 \[
 \min_{m,u}\ \tfrac12\norm{Ru-d_{\text{obs}}}^{2}
  + \tfrac{\mu}{2}\norm{\mathcal{A}(m)u - f}^{2} .
@@ -234,8 +241,8 @@ locais de $J$, cada um com a sua bacia. \'E o \emph{cycle skipping}
 Os dois s\~ao chamados de ``mal posto'' na literatura aplicada, e s\~ao
 fen\^omenos completamente diferentes: o primeiro \'e propriedade do
 \emph{operador linearizado} e n\~ao melhora com melhor otimizador; o segundo
-\'e propriedade da \emph{geometria de $J$} e n\~ao melhora com melhor
-regulariza\c{c}\~ao.
+\'e propriedade da \emph{geometria de $J$} e n\~ao se resolve apenas
+aumentando o peso da regulariza\c{c}\~ao.
 
 \textbf{(iii) Continuidade.} $F'(m)$ \'e um operador compacto (na
 idealiza\c{c}\~ao cont\'inua), com valores singulares que decaem a zero. A
@@ -260,8 +267,13 @@ modelo plaus\'ivel e errado & m\'inimo local & baixar frequ\^encia, melhorar
 \bottomrule
 \end{tabular}
 \end{center}
-Regularizar mais \emph{n\~ao} tira uma invers\~ao de um m\'inimo local: apenas
-deixa o modelo errado mais suave.
+Aumentar o peso de uma regulariza\c{c}\~ao de suavidade \emph{n\~ao} tira uma
+invers\~ao de um m\'inimo local: em geral, apenas deixa o modelo errado mais
+suave. (Restri\c{c}\~oes desenhadas para isso --- caixa, TV assim\'etrica
+relaxada aos poucos --- podem, sim, desviar a trajet\'oria de m\'inimos
+parasitas: Esser \emph{et al.}, 2018. Mas a\'i a regulariza\c{c}\~ao funciona
+como estrat\'egia de continua\c{c}\~ao, n\~ao como rem\'edio para o espa\c{c}o
+nulo.)
 \end{armadilha}
 
 \section{Cobertura de n\'umero de onda: o que \'e recuper\'avel, e por qu\^e}
@@ -425,7 +437,8 @@ e a lacuna espectral que o modelo inicial precisa preencher.
 \begin{enumerate}[leftmargin=*, itemsep=2pt]
 \item Mostre que, se $F$ \'e Fr\'echet-diferenci\'avel, ent\~ao \'e
 G\^ateaux-diferenci\'avel, e exiba a raz\~ao pela qual a rec\'iproca falha.
-Por que essa distin\c{c}\~ao \'e exatamente o que o teste de Taylor mede?
+O que, dessa distin\c{c}\~ao, o teste de Taylor consegue verificar --- e o que
+n\~ao consegue?
 \item Um levantamento tem $f\in[3,30]$\,Hz, $c = 2500$\,m/s, e \^angulos de
 espalhamento em $[40^\circ, 170^\circ]$. Calcule a faixa de
 $\abs{\mathbf{k}_m}$ coberta e o comprimento de onda de modelo mais longo e
@@ -440,8 +453,11 @@ por mais itera\c{c}\~oes que se fa\c{c}a.
 \textbf{Respostas.} (1) Fr\'echet exige que o resto seja
 $o(\norm{\delta m})$ \emph{uniformemente} na dire\c{c}\~ao; G\^ateaux exige
 apenas dire\c{c}\~ao a dire\c{c}\~ao, e o limite pode n\~ao ser uniforme nem
-linear em $\delta m$. O teste de Taylor verifica a taxa $\mathcal{O}(\alpha^2)$,
-isto \'e, exatamente a uniformidade do resto. (2)
+linear em $\delta m$. O teste de Taylor, feito ao longo de dire\c{c}\~oes
+fixas, s\'o verifica derivadas \emph{direcionais} (a propriedade de G\^ateaux)
+nas dire\c{c}\~oes testadas; a taxa $\mathcal{O}(\alpha^2)$ exige, al\'em disso,
+um termo de segunda ordem limitado ao longo da reta. A uniformidade de
+Fr\'echet n\~ao \'e acess\'ivel a um n\'umero finito de testes. (2)
 $\abs{\mathbf{k}_m} = (4\pi f/c)\sin(\theta/2)$; m\'inimo com $f=3$,
 $\theta=40^\circ$: $(4\pi\cdot3/2500)\sin20^\circ \approx 5{,}2\times10^{-3}$
 rad/m, ou $\lambda_m \approx 1{,}2$\,km; m\'aximo com $f=30$,
@@ -477,8 +493,8 @@ momento intacto.
 
 \textbf{Tensor de rigidez e simetria.} Em geral
 $\sigma_{ij} = c_{ijkl}\,\varepsilon_{kl}$, com $c_{ijkl}$ tendo 21
-componentes independentes (simetria trigonal do tensor mais a existencia de
-uma energia de deforma\c{c}\~ao). Impor simetrias reduz esse n\'umero:
+componentes independentes: as simetrias de $\sigma$ e de $\varepsilon$ levam
+de 81 a 36, e a exist\^encia de uma energia de deforma\c{c}\~ao, de 36 a 21. Impor simetrias reduz esse n\'umero:
 isotropia deixa 2 ($\lambda,\mu$); VTI deixa 5; ortorr\^ombico, 9. \textbf{Cada
 simetria imposta \'e uma hip\'otese f\'isica com custo}, exatamente como
 $\mu = 0$.
@@ -541,13 +557,13 @@ $p = -(\sigma_{xx}+\sigma_{zz})/2$; e o sistema de primeira ordem
 que, eliminando $\mathbf{v}$, d\'a
 \begin{equation}
 \frac{1}{K}\,\partial_{tt} p
- = \nabla\!\cdot\!\Bigl(\frac{1}{\rho}\nabla p\Bigr) + \partial_t s .
+ = \nabla\!\cdot\!\Bigl(\frac{1}{\rho}\nabla p\Bigr) + \frac{1}{K}\,\partial_t s .
 \label{eq:ac2}
 \end{equation}
 
 \begin{armadilha}[A fonte muda de significado na elimina\c{c}\~ao]
 O termo-fonte de \eqref{eq:sist1} aparece em \eqref{eq:ac2} \emph{derivado no
-tempo}. Escrever ``$+s$'' em \eqref{eq:ac2} \'e redefinir a fonte --- pr\'atica
+tempo} (e dividido por $K$). Escrever ``$+s$'' em \eqref{eq:ac2} \'e redefinir a fonte --- pr\'atica
 universal e quase nunca declarada. Consequ\^encia: dois c\'odigos corretos, um
 de primeira e outro de segunda ordem, alimentados pela mesma ondaleta,
 produzem tra\c{c}os que diferem por uma derivada temporal.
@@ -854,12 +870,13 @@ O est\^encil espacial \emph{atrasa} a fase; o \emph{leap-frog} a
 semi-discreta prev\^e $c_{\text{num}}/c = 0{,}9939$; o esquema completo
 \eqref{eq:disp3} d\'a $0{,}9980$ com $C=0{,}3$ (erro \emph{menor} que o
 previsto) e $1{,}0081$ com $C=0{,}551$ (erro \emph{maior}). Em
-$\mathcal{O}(8)$ com $G=5$, $C=0{,}5$: a curva espacial promete $0{,}07\%$ e o
+$\mathcal{O}(8)$ com $G=5$, $C = 0{,}9\,C_{\lim} \approx 0{,}50$: a curva
+espacial promete $0{,}07\%$ e o
 esquema entrega $1{,}6\%$ --- o erro espacial sumiu e sobrou o temporal,
 sozinho.
 
-Verifica\c{c}\~ao independente no propagador do curso: velocidade de fase
-relativa medida $1{,}0146$, contra $1{,}0160$ da rela\c{c}\~ao completa e
+Verifica\c{c}\~ao independente no propagador do curso (mesmo caso,
+$C = 0{,}499$): velocidade de fase relativa medida $1{,}0146$, contra $1{,}0160$ da rela\c{c}\~ao completa e
 $0{,}9993$ da curva espacial. A rela\c{c}\~ao completa acerta; a curva
 espacial erra o sinal do desvio.
 \end{armadilha}
@@ -976,12 +993,14 @@ trabalho.
 \end{ideia}
 
 \begin{matematica}[continua\c{c}\~ao anal\'itica e estiramento complexo de coordenada]
-\textbf{A observa\c{c}\~ao de partida.} Uma onda plana harm\^onica
-$e^{\mathrm{i}kx}$ \'e uma fun\c{c}\~ao \emph{inteira} de $x$: faz sentido
-avali\'a-la em $x$ complexo. E se $x \to x + \mathrm{i}\eta$ com $\eta > 0$ e
-$k > 0$,
+\textbf{A observa\c{c}\~ao de partida.} Com a conven\c{c}\~ao de Fourier deste
+volume (depend\^encia temporal $e^{\mathrm{i}\omega t}$; Ap\^endice de
+identidades), uma onda plana que viaja no sentido $+x$ \'e
+$e^{\mathrm{i}(\omega t - kx)}$, com $k>0$. Ela \'e uma fun\c{c}\~ao
+\emph{inteira} de $x$: faz sentido avali\'a-la em $x$ complexo. E se
+$x \to x - \mathrm{i}\eta$ com $\eta > 0$,
 \[
-e^{\mathrm{i}k(x+\mathrm{i}\eta)} = e^{\mathrm{i}kx}\,e^{-k\eta},
+e^{-\mathrm{i}k(x-\mathrm{i}\eta)} = e^{-\mathrm{i}kx}\,e^{-k\eta},
 \]
 isto \'e: \textbf{a onda decai}, sem que nada tenha mudado na equa\c{c}\~ao.
 Ela continua sendo a mesma solu\c{c}\~ao da mesma EDP, apenas avaliada fora do
@@ -993,7 +1012,9 @@ eixo real.
 \qquad
 s(x) = 1 + \frac{\sigma(x)}{\mathrm{i}\omega},
 \]
-e substitua $\partial_x \to s(x)^{-1}\partial_x$ na equa\c{c}\~ao. Onde
+e substitua $\partial_x \to s(x)^{-1}\partial_x$ na equa\c{c}\~ao. Como
+$\tilde x = x - \mathrm{i}\,\omega^{-1}\!\int_0^x\sigma$, isto \'e exatamente
+o deslocamento acima, com $\eta = \omega^{-1}\!\int_0^x\sigma \ge 0$. Onde
 $\sigma = 0$ (dom\'inio f\'isico) nada muda; onde $\sigma > 0$ (a moldura), a
 solu\c{c}\~ao \'e a continua\c{c}\~ao anal\'itica, que decai.
 
@@ -1001,9 +1022,12 @@ solu\c{c}\~ao \'e a continua\c{c}\~ao anal\'itica, que decai.
 mesma dos dois lados --- s\'o a coordenada foi estirada. N\~ao existe
 contraste de imped\^ancia, e portanto n\~ao existe reflex\~ao, \emph{para
 qualquer \^angulo e qualquer frequ\^encia}. Da\'i o nome: \emph{perfectly
-matched}. A reflex\~ao que se observa na pr\'atica vem inteiramente da
+matched}. A reflex\~ao que se observa na pr\'atica tem duas origens: a
 \textbf{discretiza\c{c}\~ao} de $\sigma$ --- por isso $\sigma$ \'e crescido
-suavemente (tipicamente polinomial) em vez de ligado de uma vez.
+suavemente (tipicamente polinomial) em vez de ligado de uma vez --- e a
+\textbf{espessura finita} da moldura, pois a onda que a atravessa bate na
+parede externa e volta, atenuada duas vezes (\'e o que falha em incid\^encia
+rasante, adiante).
 \end{matematica}
 
 \section{PML cl\'assica, e por que ela falha em incid\^encia rasante}
@@ -1031,11 +1055,16 @@ generaliza o estiramento para
 s(x) = \kappa(x) + \frac{\sigma(x)}{\alpha(x) + \mathrm{i}\omega},
 \qquad \kappa \ge 1,\ \alpha > 0 .
 \]
-O $\kappa$ estica tamb\'em a parte \emph{real} da coordenada, o que encurta o
-comprimento de onda aparente dentro da moldura e ataca diretamente o caso
-rasante. O $\alpha$ --- o \emph{deslocamento de frequ\^encia} --- amortece as
-componentes evanescentes e de baix\'issima frequ\^encia, que a PML cl\'assica
-trata mal.
+O $\kappa$ estica tamb\'em a parte \emph{real} da coordenada, o que acelera o
+decaimento das componentes evanescentes dentro da moldura. O $\alpha$ --- o
+\emph{deslocamento de frequ\^encia} (CFS), que tira o polo de $\omega = 0$ ---
+\'e o que melhora a absor\c{c}\~ao em incid\^encia \textbf{rasante} e das ondas
+evanescentes, a melhoria que d\'a t\'itulo a Komatitsch \& Martin (2007). Ele
+tem um pre\c{c}o: para $\omega \lesssim \alpha$ a moldura fica quase
+transparente, e as ondas propagantes de \emph{baixa} frequ\^encia passam a ser
+absorvidas \emph{pior} que na PML cl\'assica (Pled \& Desceliers, 2022). Em FWI,
+que come\c{c}a justamente pelas bandas baixas, isso pesa: \'e comum fazer
+$\alpha$ decrescer da entrada para o fundo da moldura.
 
 O pre\c{c}o \'e o nome: $1/(\alpha+\mathrm{i}\omega)$ no dom\'inio do tempo
 \'e uma \textbf{convolu\c{c}\~ao}, implementada com vari\'aveis de mem\'oria
@@ -1144,8 +1173,8 @@ Profundidade de investiga\c{c}\~ao \'e governada pelo \emph{menor} $\theta$
 alcan\c{c}\'avel, isto \'e, pela abertura. Adensar receptores dentro da mesma
 abertura acrescenta amostras dos \emph{mesmos} $\mathbf{k}_m$ --- melhora
 condicionamento e ru\'ido, e n\~ao acrescenta nenhuma componente nova. Da\'i a
-regra $z_{\max}\approx x_{\text{off}}^{\max}/3$ a $/2$, que n\~ao depende da
-densidade.
+regra $z_{\max}\approx x_{\text{off}}^{\max}/6$ a $x_{\text{off}}^{\max}/3$
+(Morgan \emph{et al.}, 2013), que n\~ao depende da densidade.
 \end{teoria}
 
 \begin{atencao}[2D contra 3D: uma corre\c{c}\~ao que \'e frequentemente
@@ -1227,7 +1256,7 @@ compara\c{c}\~ao.
 \textbf{Medido para uma Ricker.} Calculando $\Phi(\tau)$ numericamente: a
 divisa entre ``corrige certo'' e ``corrige errado'' cai em
 $\tau \approx 0{,}43\,T$, e h\'a um \textbf{m\'inimo local} em
-$\tau \approx 0{,}90\,T$. A regra de meio ciclo ($T/2$) \'e portanto
+$\tau \approx 0{,}91\,T$. A regra de meio ciclo ($T/2$) \'e portanto
 ligeiramente \textbf{otimista}, e o po\c{c}o em que a invers\~ao cai est\'a
 pouco antes de um per\'iodo completo.
 
@@ -1340,7 +1369,7 @@ insiste, isso n\~ao se parece com erro.
 \textbf{Pre\c{c}o.} Exige \emph{janelamento} --- \'e preciso identificar
 \emph{qual} evento se est\'a comparando. Isso reintroduz interpreta\c{c}\~ao
 humana, que era justamente o que a FWI prometia eliminar. Em compensa\c{c}\~ao,
-$\Phi(\tau) = \tau^{2}$ exatamente: perfeitamente convexa em deslocamento,
+$\Phi(\tau) = \tfrac12\tau^{2}$ exatamente: perfeitamente convexa em deslocamento,
 dentro da janela.
 
 \subsection*{Invers\~ao adaptativa (AWI)}
@@ -1384,11 +1413,18 @@ in\'icio deste cap\'itulo.
 de \textbf{massa igual}. Um tra\c{c}o s\'ismico oscila em torno de zero e
 n\~ao \'e nenhuma das duas coisas. Os contornos usados na literatura --- cada
 um com o seu custo --- s\~ao: separar as partes positiva e negativa;
-transformar por $d \mapsto e^{\beta d}$ ou $d\mapsto d^{2}$ (n\~ao lineares, e
-a convexidade em deslocamento \emph{n\~ao} \'e preservada por uma
-transforma\c{c}\~ao arbitr\'aria); ou aplicar OT no \emph{gr\'afico} do
+transformar por $d\mapsto d^{2}$, $d \mapsto e^{\beta d}$ ou $d\mapsto d + c$;
+ou aplicar OT no \emph{gr\'afico} do
 tra\c{c}o (\emph{graph-space OT}), que preserva a propriedade ao custo de um
 problema de atribui\c{c}\~ao por tra\c{c}o.
+
+Para uma transla\c{c}\~ao \emph{pura} numa janela longa, uma
+transforma\c{c}\~ao ponto a ponto $g$ com $g(0)=0$ (como $d^{2}$) comuta com a
+transla\c{c}\~ao e preserva $W_2^{2} = \tau^{2}$. O custo aparece fora desse
+caso ideal: $d^{2}$ descarta a polaridade; $e^{\beta d}$ e $d+c$ criam um fundo
+constante que n\~ao se translada numa janela finita e achata o funcional; e
+nenhuma transforma\c{c}\~ao ponto a ponto \'e neutra para varia\c{c}\~oes de
+amplitude.
 
 \textbf{A leitura honesta:} o transporte \'otimo resolve o problema de
 deslocamento de forma limpa \emph{no caso idealizado}, e a dificuldade toda
@@ -1441,7 +1477,7 @@ portanto mais maneiras de produzir um resultado que parece bom e n\~ao \'e.
 \begin{itemize}[leftmargin=*, itemsep=1pt]
 \item $\Phi(\tau) = \norm{d}^{2} - R_{dd}(\tau)$: a n\~ao convexidade \emph{\'e}
 a autocorrela\c{c}\~ao do dado. Para uma Ricker, divisa em $0{,}43\,T$ e
-m\'inimo local em $0{,}90\,T$.
+m\'inimo local em $0{,}91\,T$.
 \item Cada funcional alternativo se reduz a uma fonte adjunta diferente ---
 deduzida aqui para envolt\'oria e correla\c{c}\~ao cruzada.
 \item $W_2^{2}$ \'e exatamente convexa em transla\c{c}\~ao, mas exige
@@ -1536,19 +1572,27 @@ De \eqref{eq:born}, o adjunto sai por inspe\c{c}\~ao, usando reciprocidade:
 \label{eq:adj_freq}
 \end{equation}
 
-Duas implementa\c{c}\~oes s\~ao poss\'iveis, e a escolha \'e puramente de
-custo:
+Duas implementa\c{c}\~oes s\~ao poss\'iveis, e a escolha \'e de custo e de
+armazenamento:
 
 \textbf{(i) Integral de espalhamento.} Calcule e armazene
 $G(\mathbf{x},\mathbf{x}_r)$ para \emph{cada} receptor --- $n_r$
-fun\c{c}\~oes de Green --- e some. Custo: $n_r$ modelagens por tiro.
+modelagens, feitas \emph{uma vez} e reaproveitadas por todos os tiros e todas
+as itera\c{c}\~oes (por reciprocidade) --- e some. Pre\c{c}o: guardar $n_r$
+campos de Green em todo o dom\'inio.
 
 \textbf{(ii) Estado adjunto.} Reconhe\c{c}a que
 $\sum_r \overline{G(\mathbf{x},\mathbf{x}_r)}\hat r(\mathbf{x}_r)$ \'e
 \emph{a solu\c{c}\~ao de uma \'unica equa\c{c}\~ao de onda} com todos os
-res\'iduos como fontes simult\^aneas. Custo: \textbf{1} modelagem por tiro.
+res\'iduos como fontes simult\^aneas. Custo: \textbf{1} modelagem adjunta por
+tiro, a cada itera\c{c}\~ao, sem armazenamento extra.
 
-A economia \'e $n_r$ --- t\^ipicamente $10^{2}$ a $10^{3}$. \textbf{O
+Por itera\c{c}\~ao, portanto, (ii) custa $n_s$ propaga\c{c}\~oes adjuntas e
+(i) nenhuma, depois de pagar $n_r$ de uma vez. Com muito mais fontes que
+receptores e disco barato --- sismologia regional --- a integral de
+espalhamento sai mais econ\^omica (Chen, Jordan \& Zhao, 2007); em
+explora\c{c}\~ao, com milhares de receptores por tiro, o estado adjunto vence
+com folga. \textbf{O
 m\'etodo do estado adjunto n\~ao \'e uma aproxima\c{c}\~ao da integral de
 espalhamento: \'e a mesma quantidade, avaliada por uma associa\c{c}\~ao mais
 econ\^omica dos fatores.} A distin\c{c}\~ao \'e a mesma entre
@@ -1621,8 +1665,11 @@ discreta.
 Compare \eqref{eq:adjunta3} com o problema direto: \emph{mesma} equa\c{c}\~ao.
 A raz\~ao \'e estrutural: $\partial_{tt}^{*} = \partial_{tt}$ (duas
 integra\c{c}\~oes por partes, dois sinais que se cancelam) e
-$(\nabla^{2})^{*} = \nabla^{2}$ com contorno homog\^eneo. Um operador s\'o com
-derivadas de ordem \emph{par} \'e auto-adjunto.
+$(\nabla^{2})^{*} = \nabla^{2}$ com contorno homog\^eneo. Derivadas de ordem
+\emph{par}, com coeficientes em forma divergente --- como $m(\mathbf{x})\,
+\partial_{tt}$ e $\nabla\!\cdot\!(\rho^{-1}\nabla)$ --- d\~ao operador
+auto-adjunto. (A forma importa: $a(x)\,\partial_{xx}$ \emph{n\~ao} \'e, porque o
+seu adjunto \'e $\partial_{xx}(a\,\cdot)$.)
 
 Basta uma derivada \emph{\'impar} para quebrar: $\partial_t^{*} =
 -\partial_t$. \'E o caso do termo dissipativo viscoac\'ustico
@@ -1645,10 +1692,11 @@ K^{sr}(\mathbf{x},\omega) \;=\; \operatorname{Re}\Bigl[\,\omega^{2}\,
 \end{equation}
 com $\hat w$ a ondaleta e $\hat r$ o res\'iduo naquele receptor.
 
-Escrevendo $G \sim A\,e^{\mathrm{i}\omega T}$, o produto dos dois conjugados
-carrega a fase $-\omega[T_s(\mathbf{x}) + T_r(\mathbf{x})]$, e o res\'iduo
-carrega $+\omega t$. A fase total de \eqref{eq:kernel} \'e portanto
-$\omega\,[\,t - T_s(\mathbf{x}) - T_r(\mathbf{x})\,]$ --- e \'e a sua
+Escrevendo $G \sim A\,e^{-\mathrm{i}\omega T}$ (um atraso $T$, na
+conven\c{c}\~ao de Fourier do volume), o produto dos dois conjugados carrega a
+fase $+\omega[T_s(\mathbf{x}) + T_r(\mathbf{x})]$, e um evento do res\'iduo no
+instante $t$ carrega $-\omega t$. A fase total de \eqref{eq:kernel} \'e
+portanto $-\omega\,[\,t - T_s(\mathbf{x}) - T_r(\mathbf{x})\,]$ --- e \'e a sua
 estacionariedade que seleciona a geometria.
 
 \begin{teoria}[A geometria que a fase estacion\'aria imp\~oe]
@@ -1908,8 +1956,9 @@ tem componente em todos com probabilidade 1.
 Produto escalar & que o operador implementado como ``adjunto'' \'e de fato o
   adjunto do implementado como ``direto'' & se o ``direto'' \'e a
   lineariza\c{c}\~ao certa de $F$ \\
-Taylor & que $\mathbf{g}$ \'e a derivada de Fr\'echet do $J$ que o c\'odigo
-  avalia & erro de escala comum a $J$ e $\mathbf{g}$ \\
+Taylor & que $\inner{\mathbf{g}}{\mathbf{h}}$ \'e a derivada direcional do $J$
+  que o c\'odigo avalia, nas dire\c{c}\~oes testadas & erro de escala comum a
+  $J$ e $\mathbf{g}$ \\
 Direcional & o mesmo, num n\'umero s\'o; \'e o teste do dia a dia
   & ru\'ido num\'erico confunde \\
 Pontual & \emph{onde} est\'a o erro & nada, isoladamente \\
@@ -1929,8 +1978,10 @@ grandeza; raz\~ao est\'avel em 1.
 raz\~ao se aproxima de 1, o desvio era discrep\^ancia cont\'inuo/discreto
 (§\ref{sec:disc-adj}); se n\~ao muda, \'e \emph{bug}.
 \item \textbf{Multipar\^ametro}: repita o direcional com $\mathbf{h}$ ativo em
-\emph{um} par\^ametro de cada vez, e depois em combina\c{c}\~ao. Erros de regra
-da cadeia s\'o aparecem no segundo caso.
+\emph{um} par\^ametro de cada vez. \'E esse teste que localiza erros de regra da
+cadeia: como a derivada direcional \'e linear em $\mathbf{h}$, se cada
+par\^ametro passa sozinho a combina\c{c}\~ao passa automaticamente --- o teste
+combinado n\~ao encontra nada que os individuais n\~ao tenham encontrado.
 \end{enumerate}
 \end{pratica}
 
@@ -2016,10 +2067,10 @@ aleat\'orio tem componente em todos os modos com probabilidade 1, e por isso
 n\~ao tem esse ponto cego. (2) Certo \emph{porque} o n\'ucleo gaussiano \'e
 sim\'etrico, logo $S^{T} = S$; se o filtro fosse assim\'etrico (causal, por
 exemplo) seria errado. Aplicar por acaso a opera\c{c}\~ao certa n\~ao \'e o
-mesmo que aplicar o adjunto. (3) Fator $2$: ou a diferen\c{c}a centrada foi
-implementada com $2\alpha$ onde devia ser $\alpha$ (ou vice-versa), ou o
-funcional foi definido com $\tfrac12\norm{r}^{2}$ e o gradiente derivado de
-$\norm{r}^{2}$.
+mesmo que aplicar o adjunto. (3) A derivada num\'erica, no denominador da
+raz\~ao, saiu $2\times$ maior do que deveria: ou a diferen\c{c}a centrada foi dividida por $\alpha$ em vez de
+$2\alpha$, ou o $J$ avaliado \'e $\norm{r}^{2}$ enquanto o gradiente foi
+derivado de $\tfrac12\norm{r}^{2}$. (Os erros opostos dariam raz\~ao $2$.)
 \end{exercicio}
 
 % =====================================================================
@@ -2084,7 +2135,7 @@ multipar\^ametro, os blocos fora da diagonal entre par\^ametros s\~ao
 literalmente o \emph{crosstalk} (Cap.~\ref{cap:limites}).
 
 Inverter $H_1$ corrige dois defeitos de uma vez: reequilibra a ilumina\c{c}\~ao
-(diagonal) e \textbf{desfoca} a imagem (fora da diagonal) --- \'e por isso
+(diagonal) e \textbf{remove o desfoque} da imagem (fora da diagonal) --- \'e por isso
 que Gauss--Newton produz modelos visivelmente mais n\'itidos que gradiente
 puro, e n\~ao apenas mais r\'apidos.
 
@@ -2123,11 +2174,14 @@ e ent\~ao
    + \delta\lambda\,\partial_{tt}p\Bigr]\dd t .
 \end{equation}
 
-O primeiro termo do lado direito de (4) gera $H_1$; o segundo gera $H_2$.
-\textbf{Omitir o termo $-\delta m\,\partial_{tt}\lambda$ em (4) produz
-exatamente $H_{\text{GN}}$} --- uma linha de c\'odigo separa os dois
-m\'etodos, o que \'e conveniente e tamb\'em uma fonte de confus\~ao na
-literatura.
+O primeiro termo do lado direito de (4), correlacionado com $\partial_{tt}p$,
+gera $H_1 = F'^{*}F'$. Os outros dois --- o termo $-\delta m\,\partial_{tt}\lambda$
+em (4) e a parcela $\lambda\,\partial_{tt}\delta p$ da integral --- cont\^em o
+campo adjunto $\lambda$, proporcional ao res\'iduo, e formam $H_2$.
+\textbf{Omitir os dois produz exatamente $H_{\text{GN}}$}; omitir s\'o o de (4)
+\emph{n\~ao} --- a parcela $\lambda\,\partial_{tt}\delta p$ continua l\'a. \'E
+uma diferen\c{c}a de duas linhas de c\'odigo, conveniente e tamb\'em fonte de
+confus\~ao na literatura.
 
 \textbf{Custo:} 2 propaga\c{c}\~oes adicionais por produto, por tiro. Com
 $k$ itera\c{c}\~oes de CG por passo de Newton, o passo custa
@@ -2196,23 +2250,26 @@ que dobra a correla\c{c}\~ao.
 
 \begin{teoria}[Dois jeitos de n\~ao pagar por todos os tiros]
 \textbf{Subconjunto aleat\'orio.} Sorteie $n_{\text{sub}} \ll n_s$ tiros por
-itera\c{c}\~ao. O gradiente resultante \'e um \emph{estimador n\~ao viesado}
-do gradiente completo: $\mathbb{E}[\mathbf{g}_{\text{sub}}] = \mathbf{g}$. A
+itera\c{c}\~ao. O gradiente resultante, reescalado por $n_s/n_{\text{sub}}$,
+\'e um \emph{estimador n\~ao viesado} do gradiente completo:
+$\mathbb{E}[\mathbf{g}_{\text{sub}}] = \mathbf{g}$. A
 teoria de aproxima\c{c}\~ao estoc\'astica garante converg\^encia sob passos
 decrescentes; na pr\'atica usa-se $n_{\text{sub}}$ crescente ao longo das
 itera\c{c}\~oes (\emph{sample size scheduling}), come\c{c}ando barato e
 terminando preciso.
 
-\textbf{Codifica\c{c}\~ao de fontes (\emph{source encoding}).} Some todos os
+\textbf{Codifica\c{c}\~ao de fontes (\emph{source encoding}; Krebs \emph{et
+al.}, 2009).} Some todos os
 tiros em um \'unico ``supertiro'', cada um multiplicado por um peso aleat\'orio
 $\varepsilon_s$ (sinal $\pm1$, ou fase aleat\'oria). Como
 $\mathbb{E}[\varepsilon_s\varepsilon_{s'}] = \delta_{ss'}$, os termos cruzados
 t\^em m\'edia zero e o gradiente do supertiro \'e n\~ao viesado. O custo cai
 por um fator $n_s$.
 
-\textbf{O pre\c{c}o, em ambos:} os termos cruzados n\~ao s\~ao zero em cada
-realiza\c{c}\~ao --- s\~ao ru\'ido de \emph{crosstalk} que decai como
-$1/\sqrt{n_{\text{real}}}$. E a codifica\c{c}\~ao exige que todos os tiros
+\textbf{O pre\c{c}o:} no subconjunto, ru\'ido de amostragem (os tiros que
+ficaram de fora); na codifica\c{c}\~ao, termos cruzados que n\~ao s\~ao zero em
+cada realiza\c{c}\~ao --- ru\'ido de \emph{crosstalk}. Nos dois casos ele decai
+como $1/\sqrt{n_{\text{real}}}$. E a codifica\c{c}\~ao exige que todos os tiros
 compartilhem a mesma geometria de receptores (aquisi\c{c}\~ao fixa), o que
 exclui boa parte do dado marinho rebocado sem re-datuma\c{c}\~ao.
 \end{teoria}
@@ -2238,7 +2295,7 @@ descida (quando o sistema \'e resolvido exatamente).
 \item Estime o custo, em modelagens por tiro, de um passo de Gauss--Newton
 truncado com 8 itera\c{c}\~oes de CG, e compare com 8 itera\c{c}\~oes de
 l-BFGS supondo busca linear de 2 avalia\c{c}\~oes.
-\item A PSF num ponto profundo sai alongada na vertical. Que propriedade da
+\item A PSF num ponto profundo sai alongada na horizontal. Que propriedade da
 aquisi\c{c}\~ao isso revela, e por que \eqref{eq:km} j\'a permitia prev\^e-lo?
 \item Com codifica\c{c}\~ao de fontes, o ru\'ido de \emph{crosstalk} decai como
 $1/\sqrt{n_{\text{real}}}$. Quantas realiza\c{c}\~oes seriam necess\'arias para
@@ -2287,8 +2344,9 @@ $\mathcal{O}(N)$ --- mais o \emph{checkpointing}.
 \textbf{Na frequ\^encia}, cada $\omega$ exige resolver
 $\mathcal{A}_\omega \hat u = \hat s$, um sistema linear esparso. Com
 fatora\c{c}\~ao direta (LU), paga-se caro \emph{uma vez} e cada tiro adicional
-custa apenas uma substitui\c{c}\~ao --- $\mathcal{O}(N)$. \textbf{Com muitos
-tiros, o custo por tiro tende a zero.} Essa \'e a vantagem estrutural do
+custa apenas uma substitui\c{c}\~ao, proporcional ao tamanho dos fatores.
+\textbf{Com muitos tiros, a fatora\c{c}\~ao rateada por tiro tende a zero}, e
+sobra s\'o a substitui\c{c}\~ao. Essa \'e a vantagem estrutural do
 dom\'inio da frequ\^encia.
 
 \textbf{Por que ela desaparece em 3D.} O custo e a mem\'oria de uma
@@ -2638,9 +2696,9 @@ de dire\c{c}\~oes de autovalor pequeno e verifique que o dado praticamente
 n\~ao muda. Isso exibe \emph{explicitamente} modelos alternativos que
 explicam o dado igualmente bem.
 \item \textbf{MCMC} em FWI de escala real: invi\'avel hoje. Resultados
-existentes s\~ao 2D, de baixa dimens\~ao (modelo reparametrizado com poucas
-dezenas a poucos milhares de par\^ametros) ou com substitutos
-(\emph{surrogates}). Trate afirma\c{c}\~oes de ``UQ completa'' em 3D com
+existentes s\~ao 2D, de dimens\~ao modesta --- de dezenas a algumas dezenas de
+milhares de par\^ametros, como na FWI el\'astica por Monte Carlo Hamiltoniano
+de Gebraad \emph{et al.} (2020) --- ou usam substitutos (\emph{surrogates}). Trate afirma\c{c}\~oes de ``UQ completa'' em 3D com
 ceticismo, e pergunte qual era a dimens\~ao efetiva.
 \end{enumerate}
 \end{pratica}
@@ -2778,14 +2836,16 @@ multiplicada por um n\'umero complexo $\chi(\omega)$: o m\'odulo muda a
 amplitude, o argumento muda a fase.
 
 \textbf{Causalidade $\Rightarrow$ analiticidade.} Se a resposta ao impulso
-$\chi(t)$ se anula para $t<0$, ent\~ao
-$\chi(\omega) = \int_0^{\infty}\chi(t)e^{\mathrm{i}\omega t}\dd t$ converge e
-\'e \textbf{anal\'itica no semiplano superior} $\operatorname{Im}\omega > 0$ ---
-porque ali $e^{\mathrm{i}\omega t}$ decai para $t>0$. \'E a causalidade, e
-nada mais, que produz a analiticidade.
+$\chi(t)$ se anula para $t<0$, ent\~ao, com a conven\c{c}\~ao de Fourier deste
+volume, $\chi(\omega) = \int_0^{\infty}\chi(t)e^{-\mathrm{i}\omega t}\dd t$
+converge e \'e \textbf{anal\'itica no semiplano inferior}
+$\operatorname{Im}\omega < 0$ --- porque ali $e^{-\mathrm{i}\omega t}$ decai para
+$t>0$. (Com a conven\c{c}\~ao oposta, $e^{+\mathrm{i}\omega t}$, comum em
+f\'isica, o semiplano \'e o superior; o conte\'udo \'e o mesmo.) \'E a
+causalidade, e nada mais, que produz a analiticidade.
 
 \textbf{Kramers--Kronig.} Aplicando a f\'ormula integral de Cauchy a uma
-fun\c{c}\~ao anal\'itica no semiplano superior, as partes real e imagin\'aria
+fun\c{c}\~ao anal\'itica nesse semiplano, as partes real e imagin\'aria
 deixam de ser independentes: cada uma \'e a transformada de Hilbert da outra.
 
 \textbf{O enunciado em portugu\^es.} \emph{N\~ao existe} meio causal que
@@ -2846,7 +2906,9 @@ sendo o fator $1/(2Q)$ v\'alido para $Q\gg1$ (a forma exata traz
 $\tan(\pi\gamma/2)$; a diferen\c{c}a medida \'e $0{,}25\%$ em $Q=10$ e
 $0{,}06\%$ em $Q=20$).
 
-Efeito sobre uma Ricker de 20\,Hz ap\'os 1500\,m, medido no curso:
+Efeito sobre uma Ricker de 20\,Hz ap\'os 1500\,m, medido no curso (frequ\^encia
+de pico do espectro cont\'inuo; a FFT da aula~14, com $\Delta f \approx
+0{,}24$\,Hz, arredonda o caso $Q=200$ para $18{,}8$\,Hz):
 
 \begin{center}
 \begin{tabular}{@{}rrrr@{}}
@@ -2854,7 +2916,7 @@ Efeito sobre uma Ricker de 20\,Hz ap\'os 1500\,m, medido no curso:
 $Q$ & $\gamma$ & \textbf{amplitude rel.} & $f$ de pico (Hz) \\
 \midrule
 $10\,000$ & $3{,}2\times10^{-5}$ & 1{,}0000 & 20{,}0 \\
-200 & $1{,}59\times10^{-3}$ & 0{,}7738 & 18{,}8 \\
+200 & $1{,}59\times10^{-3}$ & 0{,}7738 & 18{,}9 \\
 100 & $3{,}18\times10^{-3}$ & 0{,}6008 & 17{,}8 \\
 50  & $6{,}37\times10^{-3}$ & 0{,}3713 & 15{,}9 \\
 20  & $1{,}59\times10^{-2}$ & 0{,}1056 & 11{,}5 \\
@@ -2876,6 +2938,7 @@ pico e mudan\c{c}a de velocidade --- s\~ao insepar\'aveis, por causalidade.}
 \end{figure}
 
 \section{O princ\'ipio que organiza o cap\'itulo}
+\label{sec:principio3}
 
 \begin{armadilha}[]
 \textbf{O que a FWI n\~ao consegue explicar pela f\'isica, ela explica mexendo
@@ -3076,7 +3139,7 @@ m\'etodo de segunda ordem os separa. Reparametrizar realoca a ambiguidade;
 n\~ao a remove.
 
 \textbf{6. Escolher a f\'isica continua sendo julgamento.} Existem
-diagn\'osticos (§11.5) mas n\~ao existe crit\'erio autom\'atico que decida se
+diagn\'osticos (§\ref{sec:principio3}) mas n\~ao existe crit\'erio autom\'atico que decida se
 vale pagar por viscoelasticidade num dado espec\'ifico.
 \end{teoria}
 
@@ -3097,8 +3160,8 @@ $\lambda$? Se n\~ao, quem determinou a resposta foi a escolha, n\~ao o dado.
 \begin{itemize}[leftmargin=*, itemsep=1pt]
 \item Dois diagn\'osticos s\~ao \emph{conclusivos} (produto escalar, Taylor) e
 baratos; todos os demais s\~ao indicativos e caros.
-\item A PSF \'e a \'unica medida local de resolu\c{c}\~ao que n\~ao exige
-conhecer a verdade --- e portanto a \'unica que serve em dado real.
+\item A PSF \'e a medida local de resolu\c{c}\~ao mais barata que n\~ao exige
+conhecer a verdade --- e portanto serve em dado real.
 \item Barras de erro de Laplace s\~ao condicionais \`a bacia e \`a f\'isica;
 sem esse condicional, s\~ao enganosas.
 \item O que permanece aberto n\~ao \'e detalhe de implementa\c{c}\~ao:
@@ -3182,7 +3245,7 @@ $\widehat{w(\cdot-t_0)} = \hat w\,e^{-2\pi\mathrm{i}ft_0}$.
 
 \textbf{Espectro da Ricker.}
 $\abs{W(f)} = (2/\sqrt{\pi})(f^{2}/f_0^{3})e^{-f^{2}/f_0^{2}}$; pico em $f_0$;
-$-6$\,dB em $1{,}63f_0$; $-20$\,dB em $2{,}21f_0$ (ra\'izes de
+$-6$\,dB em $1{,}64f_0$; $-20$\,dB em $2{,}21f_0$ (ra\'izes de
 $u\,e^{1-u} = \eta$ com $u = (f/f_0)^{2}$).
 
 \textbf{Estabilidade e dispers\~ao (leap-frog $+$ est\^encil centrado).}
@@ -3220,26 +3283,45 @@ seismic waveform inversion.} Geophysics, v.~60, n.~5, p.~1457--1473, 1995.
 discrete acoustic and elastic wave equations.} Geophysics, v.~50, n.~4,
 p.~705--708, 1985.
 
+\item CHEN, P.; JORDAN, T.~H.; ZHAO, L. \emph{Full three-dimensional
+tomography: a comparison between the scattering-integral and adjoint-wavefield
+methods.} Geophysical Journal International, v.~170, n.~1, p.~175--181, 2007.
+
+\item ESSER, E.; GUASCH, L.; VAN LEEUWEN, T.; ARAVKIN, A.~Y.; HERRMANN, F.~J.
+\emph{Total variation regularization strategies in full-waveform inversion.}
+SIAM Journal on Imaging Sciences, v.~11, n.~1, p.~376--406, 2018.
+
 \item FICHTNER, A. \emph{Full Seismic Waveform Modelling and Inversion.}
 Springer, 2011.
+
+\item GEBRAAD, L.; BOEHM, C.; FICHTNER, A. \emph{Bayesian elastic
+full-waveform inversion using Hamiltonian Monte Carlo.} Journal of Geophysical
+Research: Solid Earth, v.~125, n.~3, e2019JB018428, 2020.
 
 \item GRIEWANK, A.; WALTHER, A. \emph{Algorithm 799: revolve --- an
 implementation of checkpointing for the reverse or adjoint mode of
 computational differentiation.} ACM TOMS, v.~26, n.~1, p.~19--45, 2000.
 
-\item KJARTANSSON, E. \emph{Constant-Q wave propagation and attenuation.}
-JGR, v.~84, p.~4737--4748, 1979.
-
 \item GRIEWANK, A.; WALTHER, A. \emph{Evaluating Derivatives: Principles and
 Techniques of Algorithmic Differentiation.} 2.~ed. SIAM, 2008. --- o
 tratamento completo do resultado de \emph{checkpointing} \'otimo.
+
+\item KJARTANSSON, E. \emph{Constant-Q wave propagation and attenuation.}
+JGR, v.~84, p.~4737--4748, 1979.
 
 \item KOMATITSCH, D.; MARTIN, R. \emph{An unsplit convolutional perfectly
 matched layer improved at grazing incidence for the seismic wave equation.}
 Geophysics, v.~72, n.~5, p.~SM155--SM167, 2007.
 
+\item KREBS, J.~R. \emph{et al.} \emph{Fast full-wavefield seismic inversion
+using encoded sources.} Geophysics, v.~74, n.~6, p.~WCC177--WCC188, 2009.
+
 \item LUO, Y.; SCHUSTER, G.~T. \emph{Wave-equation traveltime inversion.}
 Geophysics, v.~56, n.~5, p.~645--653, 1991.
+
+\item MARQUERING, H.; DAHLEN, F.~A.; NOLET, G. \emph{Three-dimensional
+sensitivity kernels for finite-frequency traveltimes: the banana-doughnut
+paradox.} Geophysical Journal International, v.~137, n.~3, p.~805--815, 1999.
 
 \item M\'ETIVIER, L.; BROSSIER, R.; VIRIEUX, J.; OPERTO, S.
 \emph{Full waveform inversion and the truncated Newton method.} SIAM Journal
@@ -3249,9 +3331,9 @@ on Scientific Computing, v.~35, n.~2, p.~B401--B437, 2013.
 seismograms using an optimal transport distance.} Geophysical Journal
 International, v.~205, n.~1, p.~345--377, 2016.
 
-\item MARQUERING, H.; DAHLEN, F.~A.; NOLET, G. \emph{Three-dimensional
-sensitivity kernels for finite-frequency traveltimes: the banana-doughnut
-paradox.} Geophysical Journal International, v.~137, n.~3, p.~805--815, 1999.
+\item MORGAN, J. \emph{et al.} \emph{Next-generation seismic experiments:
+wide-angle, multi-azimuth, three-dimensional, full-waveform inversion.}
+Geophysical Journal International, v.~195, n.~3, p.~1657--1678, 2013.
 
 \item NOCEDAL, J.; WRIGHT, S.~J. \emph{Numerical Optimization.} 2.~ed.
 Springer, 2006.
@@ -3259,6 +3341,11 @@ Springer, 2006.
 \item OPERTO, S. \emph{et al.} \emph{A guided tour of multiparameter
 full-waveform inversion with multicomponent data.} The Leading Edge, v.~32,
 n.~9, p.~1040--1054, 2013.
+
+\item PLED, F.; DESCELIERS, C. \emph{Review and recent developments on the
+perfectly matched layer (PML) method for the numerical modeling and simulation
+of elastic wave propagation in unbounded domains.} Archives of Computational
+Methods in Engineering, v.~29, n.~1, p.~471--518, 2022.
 
 \item PLESSIX, R.-E. \emph{A review of the adjoint-state method for computing
 the gradient of a functional with geophysical applications.} GJI, v.~167,
@@ -3303,8 +3390,10 @@ p.~661--667, 2013.
 \item VIRIEUX, J.; OPERTO, S. \emph{An overview of full-waveform inversion in
 exploration geophysics.} Geophysics, v.~74, n.~6, p.~WCC1--WCC26, 2009.
 
-\item VIRIEUX, J. \emph{et al.} \emph{An Introduction to Full Waveform
-Inversion.} SEG, 2017.
+\item VIRIEUX, J.; ASNAASHARI, A.; BROSSIER, R.; M\'ETIVIER, L.; RIBODETTI,
+A.; ZHOU, W. \emph{An introduction to full waveform inversion.} In:
+\emph{Encyclopedia of Exploration Geophysics}. Tulsa: SEG, 2014.
+p.~R1-1--R1-40. DOI 10.1190/1.9781560803027.entry6.
 
 \item WARNER, M.; GUASCH, L. \emph{Adaptive waveform inversion: theory.}
 Geophysics, v.~81, n.~6, p.~R429--R445, 2016.
